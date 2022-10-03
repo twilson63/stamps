@@ -2,6 +2,17 @@ import Account from 'arweave-account';
 import { path, prop } from 'ramda';
 import { atomicToStamp, winstonToAr, atomicToBar } from './utils.js'
 
+const arweave = window.Arweave.init({
+  host: 'arweave.net',
+  port: 443,
+  protocol: 'https'
+})
+
+const { WarpWebFactory, LoggerFactory } = window.warp
+LoggerFactory.INST.logLevel('fatal')
+
+const warp = WarpWebFactory.memCached(arweave)
+
 const GATEWAY = 'https://arweave.net'
 const REDSTONE_GATEWAY = 'https://gateway.redstone.finance'
 const TRADE_SOURCE_ID = 'BzNLxND_nJEMfcLWShyhU4i9BnzEWaATo6FYFsfsO0Q'
@@ -18,6 +29,17 @@ export async function getAssetCount() {
 
 export async function getStampCount() {
   return fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
+    .catch(e => warp
+      .contract(STAMP_CONTRACT)
+      .setEvaluationOptions({
+        internalWrites: true,
+        allowBigInt: true,
+        allowUnsafeClient: true
+      })
+      .readState()
+      .then(prop('state'))
+
+    )
     .then(data => Object.keys(data.stamps).length)
 }
 
