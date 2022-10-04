@@ -9,10 +9,12 @@
   } from "../lib/app.js";
   import Connect from "../dialogs/connect.svelte";
   import Help from "../dialogs/wallet-help.svelte";
+  import Buy from "../dialogs/buy.svelte";
   import { profile } from "../store.js";
 
   let showConnect = false;
   let showHelp = false;
+  let showBuy = true;
 </script>
 
 <main>
@@ -110,3 +112,4 @@
 </main>
 <Connect bind:open={showConnect} on:help={() => (showHelp = true)} />
 <Help bind:open={showHelp} />
+<Buy bind:open={showBuy} />
