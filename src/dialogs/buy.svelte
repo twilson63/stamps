@@ -17,7 +17,9 @@
   on:cancel={() => (open = false)}
 >
   <div class="px-[36px] py-[24px] flex flex-col space-y-8">
+    <!--
     <img class="h-[55px] w-[55px]" src="assets/wallet.svg" alt="wallet" />
+    -->
     <h2 class="text-2xl font-bold text-[#160042]">Purchase $TAMP with $bAR</h2>
     <form>
       <div class="form-control">
@@ -37,12 +39,17 @@
           </div>
         </div>
       </div>
+      <div class="my-4">
+        <div>Current Price: 0.01 $bAR / $TAMP</div>
+      </div>
+      <!--
       <div class="form-control">
         <label class="label cursor-pointer">
           <span class="label-text">Set Price</span>
           <input type="checkbox" bind:checked={setPrice} class="checkbox" />
         </label>
       </div>
+      -->
       {#if setPrice}
         <div class="form-control">
           <label class="text-xl  text-[#160042]">Price in $bAR</label>
@@ -64,8 +71,8 @@
       {/if}
       <div class="my-4">
         <button
-          class="btn btn-block rounded-full hover:bg-gray-400"
-          on:click={() => null}>Create Buy Order</button
+          class="btn btn-block rounded-none hover:bg-gray-400"
+          on:click={() => null}>Buy</button
         >
       </div>
     </form>

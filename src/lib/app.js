@@ -1,6 +1,6 @@
 import Account from 'arweave-account';
 import { path, prop } from 'ramda';
-import { atomicToStamp, winstonToAr, atomicToBar } from './utils.js'
+import { stampToAtomic, atomicToStamp, winstonToAr, atomicToBar } from './utils.js'
 
 const arweave = window.Arweave.init({
   host: 'arweave.net',
@@ -21,6 +21,47 @@ const STAMP_CONTRACT = 'aSMILD7cEJr93i7TAVzzMjtci_sGkXcWnqpDkG6UGcA'
 const BAR = 'mMffEC07TyoAFAI_O6q_nskj2bT8n4UFvckQ3yELeic'
 const account = new Account()
 
+let stampState = null
+
+async function getStampState() {
+  if (stampState) {
+    return stampState
+  }
+  return await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
+    .catch(_ => warp.contract(STAMP_CONTRACT).setEvaluationOptions({
+      internalWrites: true,
+      allowBigInt: true,
+      allowUnsafeClient: true
+    }).readState().then(prop('state')))
+}
+
+export async function sellStampCoin(stampCoinQty, addr) {
+  const qty = Number(stampToAtomic(stampCoinQty))
+  console.log('qty', qty)
+  const prestate = await getStampState()
+  const balance = prestate.balances[addr]
+  const contract = warp.contract(STAMP_CONTRACT)
+    .connect('use_wallet')
+    .setEvaluationOptions({
+      internalWrites: true,
+      allowBigInt: true,
+      allowUnsafeClient: true
+    })
+
+  await contract
+    .bundleInteraction({
+      function: 'createOrder',
+      pair: [STAMP_CONTRACT, BAR],
+      qty
+    })
+  await new Promise(resolve => setTimeout(resolve, 500))
+  // how to confirm the order is complete?
+  stampState = await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
+  const newbalance = stampState.balances[addr]
+  return balance === newbalance + qty
+
+}
+
 export async function getAssetCount() {
   return fetch(`${REDSTONE_GATEWAY}/gateway/contracts-by-source?id=${TRADE_SOURCE_ID}`)
     .then(res => res.json())
@@ -28,19 +69,7 @@ export async function getAssetCount() {
 }
 
 export async function getStampCount() {
-  return fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
-    .catch(e => warp
-      .contract(STAMP_CONTRACT)
-      .setEvaluationOptions({
-        internalWrites: true,
-        allowBigInt: true,
-        allowUnsafeClient: true
-      })
-      .readState()
-      .then(prop('state'))
-
-    )
-    .then(data => Object.keys(data.stamps).length)
+  return getStampState().then(data => Object.keys(data.stamps).length)
 }
 
 export async function getAccount(addr) {
@@ -110,7 +139,7 @@ query {
 }
 
 export const getStampCoinBalance = async (addr) => {
-  return fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.ok ? res.json() : Promise.reject(new Error('cache not found')))
+  return getStampState()
     .then(state => state.balances[addr] ? state.balances[addr] : 0)
     .then(atomicToStamp)
     .then(x => Number(x).toFixed(2))
@@ -130,3 +159,11 @@ export const getBARBalance = async (addr) => {
     .then(x => Number(x).toFixed(4))
 }
 
+
+export const getCurrentPrice = async () => {
+  return getStampState()
+    .then(s => s.pairs.find(({ pair, orders }) => pair[0] === STAMP_CONTRACT && pair[1] === BAR))
+    .then(({ pair, orders }) => orders.reduce((a, v) => v.price < a ? v.price : a, Infinity))
+    .then(atomicToBar)
+    .then(price => Number(price).toFixed(2))
+}
