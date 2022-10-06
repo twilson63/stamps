@@ -8,12 +8,13 @@
     getBARBalance,
     sellStampCoin,
     getCurrentPrice,
+    buyStampCoin,
   } from "../lib/app.js";
   import Connect from "../dialogs/connect.svelte";
   import Help from "../dialogs/wallet-help.svelte";
   import Buy from "../dialogs/buy.svelte";
   import Sell from "../dialogs/sell.svelte";
-  import { profile } from "../store.js";
+  import { profile, balances } from "../store.js";
 
   let showConnect = false;
   let showHelp = false;
@@ -23,18 +24,36 @@
   let stampPrice;
 
   async function handleSell(e) {
-    const success = await sellStampCoin(e.detail.stampCoinQty, $profile.addr);
-    if (success) {
-      alert("Success");
-    } else {
-      alert("Error");
-    }
+    const stampCoinBalance = await sellStampCoin(
+      e.detail.stampCoinQty,
+      e.detail.price,
+      $profile.addr
+    );
+
+    $balances.stampcoins = stampCoinBalance;
+  }
+
+  async function handleBuy(e) {
+    const stampCoinBalance = await buyStampCoin(
+      e.detail.stampCoinQty,
+      e.detail.price,
+      $profile.addr
+    );
+    $balances.stampcoins = stampCoinBalance;
   }
 
   async function myStampCoins() {
     stampBalance = await getStampCoinBalance($profile.addr);
     stampPrice = await getCurrentPrice();
     return stampBalance;
+  }
+
+  async function getBalances() {
+    $balances = { assets: 0, stampcoins: 0, bar: 0, ar: 0 };
+    $balances.assets = await getUserAssets($profile.addr);
+    $balances.stampcoins = await myStampCoins();
+    $balances.bar = await getBARBalance($profile.addr);
+    $balances.ar = await getArBalance($profile.addr);
   }
 </script>
 
@@ -77,38 +96,33 @@
             <div class="stat place-items-center">
               <div class="stat-title">Atomic Assets</div>
               <div class="stat-value">
-                {#await getUserAssets($profile.addr) then count}
-                  {count}
-                {/await}
+                {$balances.assets}
               </div>
             </div>
             <div class="stat place-items-center">
               <div class="stat-title">StampCoin Balance</div>
               <div class="stat-value">
-                {#await myStampCoins() then amount}
-                  {amount}
-                {/await}
+                {$balances.stampcoins}
               </div>
             </div>
             <div class="stat place-items-center">
               <div class="stat-title">burned AR Balance</div>
               <div class="stat-value">
-                {#await getBARBalance($profile.addr) then count}
-                  {count}
-                {/await}
+                {$balances.bar}
               </div>
             </div>
             <div class="stat place-items-center">
               <div class="stat-title">AR Balance</div>
               <div class="stat-value">
-                {#await getArBalance($profile.addr) then count}
-                  {count}
-                {/await}
+                {$balances.ar}
               </div>
             </div>
           </div>
         </div>
         <div>
+          <button class="btn rounded-none" on:click={() => (showBuy = true)}
+            >Buy</button
+          >
           <button class="btn rounded-none" on:click={() => (showSell = true)}
             >Sell</button
           >
@@ -135,12 +149,21 @@
     </div>
   </section>
 </main>
-<Connect bind:open={showConnect} on:help={() => (showHelp = true)} />
+<Connect
+  bind:open={showConnect}
+  on:help={() => (showHelp = true)}
+  on:connected={getBalances}
+/>
 <Help bind:open={showHelp} />
-<Buy bind:open={showBuy} />
+<Buy
+  bind:open={showBuy}
+  price={stampPrice}
+  balance={$balances.stampcoins}
+  on:click={handleBuy}
+/>
 <Sell
   bind:open={showSell}
   on:click={handleSell}
-  balance={stampBalance}
+  balance={$balances.stampcoins}
   price={stampPrice}
 />

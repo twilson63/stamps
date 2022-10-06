@@ -10,7 +10,7 @@
 
   function handleSell() {
     open = false;
-    dispatch("click", { stampCoinQty: stamp });
+    dispatch("click", { stampCoinQty: stamp, price });
   }
 </script>
 
@@ -47,6 +47,23 @@
       </div>
       <div class="my-4">
         <div>Current Price: {price} $bAR / $TAMP</div>
+      </div>
+      <div class="form-control">
+        <label class="text-xl  text-[#160042]">Price in $bAR</label>
+        <div class="relative">
+          <input
+            id="spend"
+            type="text"
+            class="input input-bordered w-full"
+            bind:value={price}
+          />
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
+          >
+            <!-- Heroicon name: mini/exclamation-circle -->
+            <span class="font-bold">$bAR</span>
+          </div>
+        </div>
       </div>
       <div class="my-4">
         <button

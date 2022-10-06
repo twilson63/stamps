@@ -3,10 +3,17 @@
   import Modal from "../components/modal.svelte";
 
   export let open;
+  export let price = 0;
+  export let balance = 0;
+
   const dispatch = createEventDispatcher();
-  let bar = 0;
-  let price = 0;
-  let setPrice = false;
+  let qty = 0;
+  $: bar = qty * price;
+
+  function handleBuy() {
+    open = false;
+    dispatch("click", { stampCoinQty: qty, price });
+  }
 </script>
 
 <Modal
@@ -21,58 +28,37 @@
     <img class="h-[55px] w-[55px]" src="assets/wallet.svg" alt="wallet" />
     -->
     <h2 class="text-2xl font-bold text-[#160042]">Purchase $TAMP with $bAR</h2>
-    <form>
+    <p class="my-4">
+      Your current $bAR balance: {balance}
+    </p>
+    <form on:submit|preventDefault={handleBuy}>
       <div class="form-control">
-        <label class="text-xl  text-[#160042]">I will spend...</label>
+        <label class="text-xl  text-[#160042]">I want to purchase...</label>
         <div class="relative">
           <input
             id="spend"
             type="text"
             class="input input-bordered w-full"
-            bind:value={bar}
+            bind:value={qty}
           />
           <div
             class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
           >
             <!-- Heroicon name: mini/exclamation-circle -->
-            <span class="font-bold">$bAR</span>
+            <span class="font-bold">$STAMP</span>
           </div>
         </div>
       </div>
       <div class="my-4">
-        <div>Current Price: 0.01 $bAR / $TAMP</div>
+        <div>Current Price: {price} $bAR / $TAMP</div>
       </div>
-      <!--
-      <div class="form-control">
-        <label class="label cursor-pointer">
-          <span class="label-text">Set Price</span>
-          <input type="checkbox" bind:checked={setPrice} class="checkbox" />
-        </label>
+      <div class="my-4">
+        <div>Total Cost: {bar} $bAR</div>
       </div>
-      -->
-      {#if setPrice}
-        <div class="form-control">
-          <label class="text-xl  text-[#160042]">Price in $bAR</label>
-          <div class="relative">
-            <input
-              id="spend"
-              type="text"
-              class="input input-bordered w-full"
-              bind:value={price}
-            />
-            <div
-              class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
-            >
-              <!-- Heroicon name: mini/exclamation-circle -->
-              <span class="font-bold">$bAR</span>
-            </div>
-          </div>
-        </div>
-      {/if}
       <div class="my-4">
         <button
           class="btn btn-block rounded-none hover:bg-gray-400"
-          on:click={() => null}>Buy</button
+          type="submit">Buy</button
         >
       </div>
     </form>

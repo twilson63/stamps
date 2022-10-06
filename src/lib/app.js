@@ -1,6 +1,6 @@
 import Account from 'arweave-account';
 import { path, prop } from 'ramda';
-import { stampToAtomic, atomicToStamp, winstonToAr, atomicToBar } from './utils.js'
+import { barToAtomic, stampToAtomic, atomicToStamp, winstonToAr, atomicToBar } from './utils.js'
 
 const arweave = window.Arweave.init({
   host: 'arweave.net',
@@ -17,8 +17,10 @@ const GATEWAY = 'https://arweave.net'
 const REDSTONE_GATEWAY = 'https://gateway.redstone.finance'
 const TRADE_SOURCE_ID = 'BzNLxND_nJEMfcLWShyhU4i9BnzEWaATo6FYFsfsO0Q'
 const CACHE = 'https://cache.permapages.app'
+const WARP_URL = 'https://d1o5nlqr4okus2.cloudfront.net/gateway/contracts/deploy'
 const STAMP_CONTRACT = 'aSMILD7cEJr93i7TAVzzMjtci_sGkXcWnqpDkG6UGcA'
 const BAR = 'mMffEC07TyoAFAI_O6q_nskj2bT8n4UFvckQ3yELeic'
+
 const account = new Account()
 
 let stampState = null
@@ -35,31 +37,74 @@ async function getStampState() {
     }).readState().then(prop('state')))
 }
 
-export async function sellStampCoin(stampCoinQty, addr) {
-  const qty = Number(stampToAtomic(stampCoinQty))
+export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
+  const qty = Number(barToAtomic(stampCoinQty * stampPrice))
+  //const price = Number(barToAtomic(stampPrice))
   console.log('qty', qty)
   const prestate = await getStampState()
   const balance = prestate.balances[addr]
-  const contract = warp.contract(STAMP_CONTRACT)
-    .connect('use_wallet')
-    .setEvaluationOptions({
-      internalWrites: true,
-      allowBigInt: true,
-      allowUnsafeClient: true
-    })
+  const allowTx = await allow(qty)
+  await new Promise(resolve => setTimeout(resolve, 500))
 
-  await contract
-    .bundleInteraction({
-      function: 'createOrder',
-      pair: [STAMP_CONTRACT, BAR],
-      qty
-    })
+  await createOrder({
+    pair: [BAR, STAMP_CONTRACT],
+    qty,
+    transaction: allowTx
+  })
+
   await new Promise(resolve => setTimeout(resolve, 500))
   // how to confirm the order is complete?
   stampState = await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
   const newbalance = stampState.balances[addr]
-  return balance === newbalance + qty
+  if (newbalance != balance + qty) {
+    throw new Error('purchase did not work')
+  }
+  return Number(atomicToStamp(newbalance)).toFixed(2)
+}
 
+export async function sellStampCoin(stampCoinQty, stampPrice, addr) {
+  const qty = Number(stampToAtomic(stampCoinQty))
+  const price = Number(barToAtomic(stampPrice))
+  const prestate = await getStampState()
+  const balance = prestate.balances[addr]
+  const tx = await arweave.createTransaction({
+    data: Math.random().toString().slice(-4),
+    reward: '72600854',
+    last_tx: 'p7vc1iSP6bvH_fCeUFa9LqoV5qiyW-jdEKouAT0XMoSwrNraB9mgpi29Q10waEpO'
+  })
+  tx.addTag('App-Name', 'SmartWeaveAction')
+  tx.addTag('App-Version', '0.3.0')
+  tx.addTag('Contract', STAMP_CONTRACT)
+  tx.addTag('Input', JSON.stringify({
+    function: 'createOrder',
+    pair: [STAMP_CONTRACT, BAR],
+    qty,
+    price
+  }))
+  tx.addTag('SDK', 'Warp')
+
+  await arweave.transactions.sign(tx)
+
+  await fetch(`${REDSTONE_GATEWAY}/gateway/sequencer/register`, {
+    method: 'POST',
+    body: JSON.stringify(tx),
+    headers: {
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    }
+  }).then(res => res.ok ? res.json() : Promise.reject(res))
+
+
+  await new Promise(resolve => setTimeout(resolve, 500))
+  // how to confirm the order is complete?
+  stampState = await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
+  const newbalance = stampState.balances[addr]
+  if (balance !== (newbalance + qty)) {
+    throw new Error('balance does not equal new balance plus qty')
+  }
+
+  return Number(atomicToStamp(newbalance)).toFixed(2)
 }
 
 export async function getAssetCount() {
@@ -166,4 +211,58 @@ export const getCurrentPrice = async () => {
     .then(({ pair, orders }) => orders.reduce((a, v) => v.price < a ? v.price : a, Infinity))
     .then(atomicToBar)
     .then(price => Number(price).toFixed(2))
+}
+
+async function allow(amount) {
+  const tx = await arweave.createTransaction({
+    data: Math.random().toString().slice(-4),
+    reward: '72600854',
+    last_tx: 'p7vc1iSP6bvH_fCeUFa9LqoV5qiyW-jdEKouAT0XMoSwrNraB9mgpi29Q10waEpO'
+  })
+  tx.addTag('App-Name', 'SmartWeaveAction')
+  tx.addTag('App-Version', '0.3.0')
+  tx.addTag('Contract', BAR)
+  tx.addTag('Input', JSON.stringify({
+    function: 'allow',
+    target: STAMP_CONTRACT,
+    qty: amount
+  }))
+  tx.addTag('SDK', 'Warp')
+
+  await arweave.transactions.sign(tx)
+
+  return await writeInteraction(tx).then(res => res.ok ? res.json() : Promise.reject(res))
+    .then(_ => tx.id)
+    .then(x => (console.log('allowTx: ', x), x))
+}
+
+async function createOrder(input) {
+  input.function = 'createOrder'
+  const tx = await arweave.createTransaction({
+    data: Math.random().toString().slice(-4),
+    reward: '72600854',
+    last_tx: 'p7vc1iSP6bvH_fCeUFa9LqoV5qiyW-jdEKouAT0XMoSwrNraB9mgpi29Q10waEpO'
+  })
+  tx.addTag('App-Name', 'SmartWeaveAction')
+  tx.addTag('App-Version', '0.3.0')
+  tx.addTag('Contract', STAMP_CONTRACT)
+  tx.addTag('Input', JSON.stringify(input))
+  tx.addTag('SDK', 'Warp')
+
+  await arweave.transactions.sign(tx)
+
+  return await writeInteraction(tx)
+
+}
+
+function writeInteraction(tx) {
+  return fetch(`${REDSTONE_GATEWAY}/gateway/sequencer/register`, {
+    method: 'POST',
+    body: JSON.stringify(tx),
+    headers: {
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    }
+  }).then(res => res.ok ? res.json() : Promise.reject(res))
 }
