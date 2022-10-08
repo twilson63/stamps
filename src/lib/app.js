@@ -1,6 +1,7 @@
 import Account from 'arweave-account';
 import { path, prop } from 'ramda';
 import { barToAtomic, stampToAtomic, atomicToStamp, winstonToAr, atomicToBar } from './utils.js'
+import { getDailyRewards } from './rewards.js'
 
 const arweave = window.Arweave.init({
   host: 'arweave.net',
@@ -24,6 +25,8 @@ const BAR = 'mMffEC07TyoAFAI_O6q_nskj2bT8n4UFvckQ3yELeic'
 const account = new Account()
 
 let stampState = null
+
+export const getLatestWinners = () => getDailyRewards(CACHE, STAMP_CONTRACT)
 
 async function getStampState() {
   if (stampState) {

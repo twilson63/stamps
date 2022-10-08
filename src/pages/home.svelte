@@ -9,6 +9,7 @@
     sellStampCoin,
     getCurrentPrice,
     buyStampCoin,
+    getLatestWinners,
   } from "../lib/app.js";
   import Connect from "../dialogs/connect.svelte";
   import Help from "../dialogs/wallet-help.svelte";
@@ -139,13 +140,44 @@
           -->
         </div>
       {:else}
-        <div class="h-[400px] grid place-items-center">
+        <div class="h-[100px] grid place-items-center">
           <button
             class="btn btn-primary btn-outline rounded-none"
             on:click={() => (showConnect = true)}>Connect Wallet</button
           >
         </div>
       {/if}
+      <div class="flex flex-col">
+        <h3 class="text-2xl">Recent Stamp Coin Winners</h3>
+        {#await getLatestWinners() then assets}
+          {#each assets as asset}
+            <div class="card w-[400px] md:w-[800px] shadow-xl">
+              <div class="card-body">
+                <div class="card-title">{asset.title}</div>
+                <div>{asset.description}</div>
+                <div class="flex space-x-4">
+                  <div class="flex flex-col">
+                    <div class="font-bold">Rewards</div>
+                    <div>{asset.coins}</div>
+                  </div>
+                  <div class="flex flex-col">
+                    <div class="font-bold">Creator</div>
+                    <div>{asset.creator}</div>
+                  </div>
+                  <div class="flex flex-col">
+                    <div class="font-bold">View</div>
+                    <div>
+                      <a target="_blank" href="https://arweave.net/{asset.id}"
+                        >[View]</a
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {/each}
+        {/await}
+      </div>
     </div>
   </section>
 </main>
