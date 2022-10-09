@@ -57,8 +57,8 @@ function createCard(n) {
   const tag = (name) => prop('value', find(propEq('name', name), n.tags))
   return ({
     id: n.id,
-    title: tag('Title'),
-    description: tag('Description'),
+    title: tag('Title') || tag('Page-Title'),
+    description: tag('Description') || tag('Page-Description'),
     type: tag('Type'),
     creator: n.owner.address
   })
