@@ -10,12 +10,14 @@
     getCurrentPrice,
     buyStampCoin,
     getLatestWinners,
+    getAccount,
   } from "../lib/app.js";
   import Connect from "../dialogs/connect.svelte";
   import Help from "../dialogs/wallet-help.svelte";
   import Buy from "../dialogs/buy.svelte";
   import Sell from "../dialogs/sell.svelte";
   import { profile, balances } from "../store.js";
+  import { take, takeLast } from "ramda";
 
   let showConnect = false;
   let showHelp = false;
@@ -121,12 +123,14 @@
           </div>
         </div>
         <div>
+          <!--
           <button class="btn rounded-none" on:click={() => (showBuy = true)}
             >Buy</button
           >
           <button class="btn rounded-none" on:click={() => (showSell = true)}
             >Sell</button
           >
+          -->
           <button
             class="btn rounded-none  btn-outline"
             on:click={async () => {
@@ -151,30 +155,56 @@
         <h3 class="text-2xl">Recent Stamp Coin Winners</h3>
         {#await getLatestWinners() then assets}
           {#each assets as asset}
-            <div class="card w-[400px] md:w-[800px] shadow-xl">
-              <div class="card-body">
-                <div class="card-title">{asset.title}</div>
-                <div>{asset.description}</div>
-                <div class="flex space-x-4">
-                  <div class="flex flex-col">
-                    <div class="font-bold">Rewards</div>
-                    <div>{asset.coins}</div>
-                  </div>
-                  <div class="flex flex-col">
-                    <div class="font-bold">Creator</div>
-                    <div>{asset.creator}</div>
-                  </div>
-                  <div class="flex flex-col">
-                    <div class="font-bold">View</div>
-                    <div>
-                      <a target="_blank" href="https://arweave.net/{asset.id}"
-                        >[View]</a
-                      >
+            {#await getAccount(asset.creator) then acct}
+              <div class="card w-[400px] md:w-[800px] shadow-xl">
+                <div class="flex space-x-4 items-center">
+                  <img
+                    src={acct.profile.avatarURL}
+                    class="m-4 mask mask-circle h-[128px] w-[128px]"
+                    alt={acct.profile.handle}
+                  />
+
+                  <div class="card-body">
+                    <div class="card-title">{asset.title}</div>
+                    <div>{asset.description}</div>
+                    <div class="flex space-x-4">
+                      <div class="flex flex-col">
+                        <div class="font-bold">Rewards</div>
+                        <div>{asset.coins}</div>
+                      </div>
+                      <div class="flex flex-col">
+                        <div class="font-bold">Creator</div>
+                        <div>
+                          {acct.profile.handleName}
+                          <a
+                            href="https://v2.viewblock.io/arweave/address/{asset.creator}"
+                          >
+                            {`${take(5, asset.creator)}...${takeLast(
+                              5,
+                              asset.creator
+                            )}`}
+                          </a>
+                        </div>
+                      </div>
+                      <div class="flex flex-col">
+                        <div class="font-bold">View</div>
+                        <div>
+                          <a
+                            target="_blank"
+                            href="https://arweave.net/{asset.id}"
+                            ><img
+                              src="assets/view.svg"
+                              class="h-[24px] w-[24px]"
+                              alt="view asset"
+                            /></a
+                          >
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            {/await}
           {/each}
         {/await}
       </div>
