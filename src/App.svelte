@@ -5,6 +5,8 @@
 
   import Home from "./pages/home.svelte";
   import About from "./pages/about.svelte";
+  import Player from "./pages/player.svelte";
+  import Rewards from "./pages/rewards.svelte";
 
   router.mode.hash();
   router.subscribe((_) => window.scrollTo(0, 0));
@@ -17,5 +19,11 @@
   </Route>
   <Route path="/about">
     <About />
+  </Route>
+  <Route path="/player/:addr" let:meta>
+    <Player addr={meta.params.addr} />
+  </Route>
+  <Route path="/rewards/:asset" let:meta>
+    <Rewards asset={meta.params.asset} />
   </Route>
 </Transition>

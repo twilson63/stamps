@@ -1,5 +1,5 @@
 import Account from 'arweave-account';
-import { path, prop } from 'ramda';
+import { map, path, prop, compose, filter, propEq } from 'ramda';
 import { barToAtomic, stampToAtomic, atomicToStamp, winstonToAr, atomicToBar } from './utils.js'
 import { getDailyRewards } from './rewards.js'
 
@@ -27,6 +27,16 @@ const account = new Account()
 let stampState = null
 
 export const getLatestWinners = () => getDailyRewards(CACHE, STAMP_CONTRACT)
+
+export const getRewardHistory = (asset) => fetch(`${CACHE}/${STAMP_CONTRACT}`)
+  .then(res => res.json())
+  .then(
+    compose(
+      map(n => ({ coins: atomicToStamp(n.coins), date: new Date(Number(n.timestamp)).toISOString() })),
+      filter(propEq('asset', asset)),
+      prop('rewardLog')
+    )
+  )
 
 async function getStampState() {
   if (stampState) {
