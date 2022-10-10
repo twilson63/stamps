@@ -172,7 +172,7 @@
                         <div class="font-bold">Rewards</div>
                         <div>{asset.coins}</div>
                       </div>
-                      <div class="flex flex-col">
+                      <div class="flex-1 flex flex-col">
                         <div class="font-bold">Creator</div>
                         <div>
                           {acct.profile.handleName}
