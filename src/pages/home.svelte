@@ -16,6 +16,8 @@
   import Help from "../dialogs/wallet-help.svelte";
   import Buy from "../dialogs/buy.svelte";
   import Sell from "../dialogs/sell.svelte";
+  import ConfirmSell from "../dialogs/confirm-sell.svelte";
+  import ErrorDialog from "../dialogs/error.svelte";
   import { profile, balances } from "../store.js";
   import { take, takeLast } from "ramda";
 
@@ -23,17 +25,34 @@
   let showHelp = false;
   let showBuy = false;
   let showSell = false;
+  let showConfirmSell = false;
+  let showErrorDialog = false;
+  let errorMessage = "Something went wrong";
   let stampBalance;
   let stampPrice;
 
   async function handleSell(e) {
-    const stampCoinBalance = await sellStampCoin(
-      e.detail.stampCoinQty,
-      e.detail.price,
-      $profile.addr
-    );
+    try {
+      if (Number($balances.stampcoins) < Number(e.detail.stampCoinQty)) {
+        throw new Error("You do not have enough STAMP COIN rewards to sell");
+      }
+      if (Number(e.detail.price) <= 0) {
+        throw new Error("Price must be greater than zero!");
+      }
 
-    $balances.stampcoins = stampCoinBalance;
+      const stampCoinBalance = await sellStampCoin(
+        e.detail.stampCoinQty,
+        e.detail.price,
+        $profile.addr
+      );
+
+      $balances.stampcoins = stampCoinBalance;
+      showConfirmSell = true;
+    } catch (e) {
+      errorMessage = e.message;
+      showErrorDialog = true;
+      console.log(e);
+    }
   }
 
   async function handleBuy(e) {
@@ -123,9 +142,11 @@
           </div>
         </div>
         <div>
-          <button class="btn rounded-none" on:click={() => (showBuy = true)}
-            >Buy</button
-          >
+          {#if ["vh-NTHVvlKZqRxc8LyyTNok65yQ55a_PJ1zWLb9G2JI", "vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw"].includes($profile.addr)}
+            <button class="btn rounded-none" on:click={() => (showBuy = true)}
+              >Buy</button
+            >
+          {/if}
           <button class="btn rounded-none" on:click={() => (showSell = true)}
             >Sell</button
           >
@@ -218,7 +239,7 @@
 <Buy
   bind:open={showBuy}
   price={stampPrice}
-  balance={$balances.stampcoins}
+  balance={$balances.bar}
   on:click={handleBuy}
 />
 <Sell
@@ -227,3 +248,5 @@
   balance={$balances.stampcoins}
   price={stampPrice}
 />
+<ConfirmSell bind:open={showConfirmSell} />
+<ErrorDialog bind:open={showErrorDialog} bind:msg={errorMessage} />

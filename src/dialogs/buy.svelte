@@ -11,6 +11,9 @@
   $: bar = qty * price;
 
   function handleBuy() {
+    if (bar > balance) {
+      alert("You dont have enough $BAR to purchase $STAMP");
+    }
     open = false;
     dispatch("click", { stampCoinQty: qty, price });
   }
@@ -37,9 +40,10 @@
         <div class="relative">
           <input
             id="spend"
-            type="text"
+            type="number"
             class="input input-bordered w-full"
             bind:value={qty}
+            min="0"
           />
           <div
             class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"

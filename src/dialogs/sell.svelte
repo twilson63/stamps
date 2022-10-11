@@ -2,13 +2,28 @@
   import { createEventDispatcher } from "svelte";
   import Modal from "../components/modal.svelte";
 
+  import { is, not } from "ramda";
+
   export let open;
   export let balance;
   export let price;
   const dispatch = createEventDispatcher();
   let stamp = 0;
 
+  let stampErrorMsg = "";
+  let priceErrorMsg = "";
+
   function handleSell() {
+    if (stamp <= 0) {
+      stamp = "";
+      stampErrorMsg = "You must sell one or more $STAMPS";
+      return;
+    }
+    if (Number.isNaN(price)) {
+      price = "";
+      priceErrorMsg = "Price must be a number";
+      return;
+    }
     open = false;
     dispatch("click", { stampCoinQty: stamp, price });
   }
@@ -33,9 +48,12 @@
         <div class="relative">
           <input
             id="spend"
-            type="text"
+            type="number"
             class="input input-bordered w-full"
             bind:value={stamp}
+            required
+            min="0"
+            max={balance}
           />
           <div
             class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
@@ -44,6 +62,9 @@
             <span class="font-bold">$STAMP</span>
           </div>
         </div>
+        {#if stampErrorMsg}
+          <label class="text-sm text-error">{stampErrorMsg}</label>
+        {/if}
       </div>
       <div class="my-4">
         <div>Current Price: {price} $bAR / $TAMP</div>
@@ -53,9 +74,11 @@
         <div class="relative">
           <input
             id="spend"
-            type="text"
+            type="number"
             class="input input-bordered w-full"
             bind:value={price}
+            required
+            step="0.001"
           />
           <div
             class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
@@ -65,6 +88,9 @@
           </div>
         </div>
         <label class="text-sm">Price in $BAR for 1 $STAMP</label>
+        {#if priceErrorMsg}
+          <label class="text-sm text-error">{priceErrorMsg}</label>
+        {/if}
       </div>
       <div class="my-4">
         <button
