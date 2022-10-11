@@ -51,33 +51,40 @@ async function getStampState() {
 }
 
 export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
-  const qty = Number(barToAtomic(stampCoinQty * stampPrice))
-  //const price = Number(barToAtomic(stampPrice))
-  console.log('qty', qty)
-  const prestate = await getStampState()
-  const balance = prestate.balances[addr]
-  const allowTx = await allow(qty)
-  await new Promise(resolve => setTimeout(resolve, 500))
+  try {
+    const qty = Number(barToAtomic(stampCoinQty * stampPrice))
+    //const price = Number(barToAtomic(stampPrice))
+    console.log('qty', qty)
+    const prestate = await getStampState()
+    const balance = prestate.balances[addr]
 
-  await createOrder({
-    pair: [BAR, STAMP_CONTRACT],
-    qty,
-    transaction: allowTx
-  })
+    const allowTx = await allow(qty)
 
-  await new Promise(resolve => setTimeout(resolve, 500))
-  // how to confirm the order is complete?
-  stampState = await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
-  const newbalance = stampState.balances[addr]
-  if (newbalance != balance + qty) {
-    throw new Error('purchase did not work')
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    await createOrder({
+      pair: [BAR, STAMP_CONTRACT],
+      qty,
+      transaction: allowTx
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 500))
+    // how to confirm the order is complete?
+    stampState = await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
+    const newbalance = stampState.balances[addr]
+    if (newbalance != balance + qty) {
+      throw new Error('purchase did not work')
+    }
+    return Number(atomicToStamp(newbalance)).toFixed(2)
+  } catch (e) {
+    console.log(e)
+    return 0
   }
-  return Number(atomicToStamp(newbalance)).toFixed(2)
 }
 
 export async function sellStampCoin(stampCoinQty, stampPrice, addr) {
   const qty = Number(stampToAtomic(stampCoinQty))
-  const price = Number(barToAtomic(stampPrice))
+  const price = Number(barToAtomic(stampPrice)) / 1e12
   const prestate = await getStampState()
   const balance = prestate.balances[addr]
   const tx = await arweave.createTransaction({
@@ -163,6 +170,7 @@ export async function getUserAssets(addr) {
   }).then(res => res.ok ? res.json() : Promise.reject(new Error('Could not get data')))
     .then(data => {
       const edges = path(['data', 'transactions', 'edges'], data)
+      if (edges.length === 0) { return 0 }
       const query = `
 query {
   transactions(
@@ -222,8 +230,8 @@ export const getCurrentPrice = async () => {
   return getStampState()
     .then(s => s.pairs.find(({ pair, orders }) => pair[0] === STAMP_CONTRACT && pair[1] === BAR))
     .then(({ pair, orders }) => orders.reduce((a, v) => v.price < a ? v.price : a, Infinity))
-    .then(atomicToBar)
-    .then(price => Number(price).toFixed(2))
+    .then(price => (Number(price) * 1e6).toFixed(2))
+
 }
 
 async function allow(amount) {
@@ -244,7 +252,7 @@ async function allow(amount) {
 
   await arweave.transactions.sign(tx)
 
-  return await writeInteraction(tx).then(res => res.ok ? res.json() : Promise.reject(res))
+  return await writeInteraction(tx)
     .then(_ => tx.id)
     .then(x => (console.log('allowTx: ', x), x))
 }

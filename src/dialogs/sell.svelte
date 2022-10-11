@@ -64,6 +64,7 @@
             <span class="font-bold">$bAR</span>
           </div>
         </div>
+        <label class="text-sm">Price in $BAR for 1 $STAMP</label>
       </div>
       <div class="my-4">
         <button

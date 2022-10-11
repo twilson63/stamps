@@ -123,14 +123,12 @@
           </div>
         </div>
         <div>
-          <!--
           <button class="btn rounded-none" on:click={() => (showBuy = true)}
             >Buy</button
           >
           <button class="btn rounded-none" on:click={() => (showSell = true)}
             >Sell</button
           >
-          -->
           <button
             class="btn rounded-none  btn-outline"
             on:click={async () => {
