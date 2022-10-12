@@ -44,6 +44,7 @@
             class="input input-bordered w-full"
             bind:value={qty}
             min="0"
+            required
           />
           <div
             class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"

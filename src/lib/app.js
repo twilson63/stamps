@@ -219,7 +219,8 @@ export const getArBalance = async (addr) => {
 }
 
 export const getBARBalance = async (addr) => {
-  return fetch(`${CACHE}/${BAR}`).then(res => res.ok ? res.json() : Promise.reject(new Error('could not get bar balance')))
+  //fetch(`${CACHE}/${BAR}`).then(res => res.ok ? res.json() : Promise.reject(new Error('could not get bar balance')))
+  return warp.contract(BAR).readState().then(res => res.state)
     .then(state => state.balances[addr] ? state.balances[addr] : 0)
     .then(atomicToBar)
     .then(x => Number(x).toFixed(4))

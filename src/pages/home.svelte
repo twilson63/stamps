@@ -18,6 +18,7 @@
   import Sell from "../dialogs/sell.svelte";
   import ConfirmSell from "../dialogs/confirm-sell.svelte";
   import ErrorDialog from "../dialogs/error.svelte";
+  import ConfirmBuy from "../dialogs/confirm-buy.svelte";
   import { profile, balances } from "../store.js";
   import { take, takeLast } from "ramda";
 
@@ -26,6 +27,7 @@
   let showBuy = false;
   let showSell = false;
   let showConfirmSell = false;
+  let showConfirmBuy = false;
   let showErrorDialog = false;
   let errorMessage = "Something went wrong";
   let stampBalance;
@@ -56,12 +58,20 @@
   }
 
   async function handleBuy(e) {
-    const stampCoinBalance = await buyStampCoin(
-      e.detail.stampCoinQty,
-      e.detail.price,
-      $profile.addr
-    );
-    $balances.stampcoins = stampCoinBalance;
+    try {
+      const stampCoinBalance = await buyStampCoin(
+        e.detail.stampCoinQty,
+        e.detail.price,
+        $profile.addr
+      );
+      $balances.bar = await getBARBalance($profile.addr);
+      $balances.stampcoins = await myStampCoins();
+      showConfirmBuy = true;
+    } catch (e) {
+      errorMessage = e.message;
+      showErrorDialog = true;
+      console.log(e);
+    }
   }
 
   async function myStampCoins() {
@@ -250,3 +260,4 @@
 />
 <ConfirmSell bind:open={showConfirmSell} />
 <ErrorDialog bind:open={showErrorDialog} bind:msg={errorMessage} />
+<ConfirmBuy bind:open={showConfirmBuy} />
