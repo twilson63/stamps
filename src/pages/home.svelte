@@ -64,6 +64,7 @@
         e.detail.price,
         $profile.addr
       );
+
       $balances.bar = await getBARBalance($profile.addr);
       $balances.stampcoins = await myStampCoins();
       showConfirmBuy = true;
