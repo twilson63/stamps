@@ -17,7 +17,9 @@ const warp = WarpWebFactory.memCached(arweave)
 const GATEWAY = 'https://arweave.net'
 const REDSTONE_GATEWAY = 'https://gateway.redstone.finance'
 const TRADE_SOURCE_ID = 'BzNLxND_nJEMfcLWShyhU4i9BnzEWaATo6FYFsfsO0Q'
-const CACHE = 'https://cache.permapages.app'
+//const CACHE = 'https://cache.permapages.app'
+//const CACHE = 'https://3000-twilson63-barcache-sibrgc2jwpv.ws-us71.gitpod.io'
+const CACHE = 'https://stamp-cache2.onrender.com'
 const BAR_CACHE = 'https://bar-cache.onrender.com'
 const WARP_URL = 'https://d1o5nlqr4okus2.cloudfront.net/gateway/contracts/deploy'
 const STAMP_CONTRACT = 'aSMILD7cEJr93i7TAVzzMjtci_sGkXcWnqpDkG6UGcA'
@@ -54,8 +56,6 @@ async function getStampState() {
 export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
   try {
     const qty = Number(barToAtomic(stampCoinQty * stampPrice))
-    //const price = Number(barToAtomic(stampPrice))
-    console.log('qty', qty)
     const prestate = await getStampState()
     const balance = prestate.balances[addr]
 
@@ -79,7 +79,8 @@ export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
     return Number(atomicToStamp(newbalance)).toFixed(2)
   } catch (e) {
     console.log(e)
-    return 0
+
+    return Promise.reject(new Error('Transcation was rejected!'))
   }
 }
 

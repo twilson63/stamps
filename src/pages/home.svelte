@@ -108,7 +108,10 @@
         {/await}
       </div>
       {#if $profile}
-        <div class="border-2 border-gray-400 rounded-xl p-8">
+        <div class="border-2 border-gray-400 rounded-xl p-8 relative">
+          <div class="absolute top-2 right-2">
+            <button class="btn" on:click={getBalances}>Refresh</button>
+          </div>
           <div class="flex flex-col items-center space-y-4 mb-8">
             <h3 class="text-2xl font-bold">
               {$profile.profile.handleName !== ""

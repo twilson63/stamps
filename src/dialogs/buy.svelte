@@ -13,6 +13,7 @@
   function handleBuy() {
     if (bar > balance) {
       alert("You dont have enough $BAR to purchase $STAMP");
+      return;
     }
     open = false;
     dispatch("click", { stampCoinQty: qty, price });
@@ -30,7 +31,7 @@
     <!--
     <img class="h-[55px] w-[55px]" src="assets/wallet.svg" alt="wallet" />
     -->
-    <h2 class="text-2xl font-bold text-[#160042]">Purchase $TAMP with $bAR</h2>
+    <h2 class="text-2xl font-bold text-[#160042]">Purchase $STAMP with $bAR</h2>
     <p class="my-4">
       Your current $bAR balance: {balance}
     </p>
