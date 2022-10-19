@@ -23,7 +23,7 @@ const CACHE = 'https://stamp-cache2.onrender.com'
 const BAR_CACHE = 'https://bar-cache.onrender.com'
 const WARP_URL = 'https://d1o5nlqr4okus2.cloudfront.net/gateway/contracts/deploy'
 const STAMP_CONTRACT = 'aSMILD7cEJr93i7TAVzzMjtci_sGkXcWnqpDkG6UGcA'
-const BAR = 'mMffEC07TyoAFAI_O6q_nskj2bT8n4UFvckQ3yELeic'
+const BAR = 'VFr3Bk-uM-motpNNkkFg4lNW1BMmSfzqsVO551Ho4hA'
 
 const account = new Account()
 
@@ -234,6 +234,10 @@ export const getCurrentPrice = async () => {
     .then(s => s.pairs.find(({ pair, orders }) => pair[0] === STAMP_CONTRACT && pair[1] === BAR))
     .then(({ pair, orders }) => orders.reduce((a, v) => v.price < a ? v.price : a, Infinity))
     .then(price => (Number(price) * 1e6).toFixed(2))
+    .catch(e => {
+      console.log(e)
+      return 0
+    })
 
 }
 
