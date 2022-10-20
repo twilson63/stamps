@@ -11,6 +11,7 @@
     buyStampCoin,
     getLatestWinners,
     getAccount,
+    getVouchUsers,
   } from "../lib/app.js";
   import Connect from "../dialogs/connect.svelte";
   import Help from "../dialogs/wallet-help.svelte";
@@ -104,6 +105,12 @@
         {#await getStampCount() then count}
           <div class="stat place-items-center">
             <div class="stat-title">Total Stamps Created</div>
+            <div class="stat-value text-[#231F1F]">{count}</div>
+          </div>
+        {/await}
+        {#await getVouchUsers() then count}
+          <div class="stat place-items-center">
+            <div class="stat-title">Total Vouched Users</div>
             <div class="stat-value text-[#231F1F]">{count}</div>
           </div>
         {/await}

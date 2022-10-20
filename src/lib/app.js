@@ -24,10 +24,17 @@ const BAR_CACHE = 'https://bar-cache.onrender.com'
 const WARP_URL = 'https://d1o5nlqr4okus2.cloudfront.net/gateway/contracts/deploy'
 const STAMP_CONTRACT = 'aSMILD7cEJr93i7TAVzzMjtci_sGkXcWnqpDkG6UGcA'
 const BAR = 'VFr3Bk-uM-motpNNkkFg4lNW1BMmSfzqsVO551Ho4hA'
+const VOUCH_DAO = '_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk'
 
 const account = new Account()
 
 let stampState = null
+
+export const getVouchUsers = () => fetch(`https://cache.permapages.app/${VOUCH_DAO}`)
+  .then(res => res.json())
+  .then(x => (console.log(x), x))
+  .then(state => Object.keys(state.vouched).length)
+  .catch(e => 'N/A')
 
 export const getLatestWinners = () => getDailyRewards(CACHE, STAMP_CONTRACT)
 
