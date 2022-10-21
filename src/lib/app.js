@@ -9,20 +9,19 @@ const arweave = window.Arweave.init({
   protocol: 'https'
 })
 
-const { WarpWebFactory, LoggerFactory } = window.warp
+const { WarpFactory, LoggerFactory } = window.warp
 LoggerFactory.INST.logLevel('fatal')
 
-const warp = WarpWebFactory.memCached(arweave)
+const warp = WarpFactory.forMainnet()
 
 const GATEWAY = 'https://arweave.net'
 const REDSTONE_GATEWAY = 'https://gateway.redstone.finance'
 const TRADE_SOURCE_ID = 'BzNLxND_nJEMfcLWShyhU4i9BnzEWaATo6FYFsfsO0Q'
-//const CACHE = 'https://cache.permapages.app'
+const CACHE = 'https://cache.permapages.app'
 //const CACHE = 'https://3000-twilson63-barcache-sibrgc2jwpv.ws-us71.gitpod.io'
-const CACHE = 'https://stamp-cache2.onrender.com'
 const BAR_CACHE = 'https://bar-cache.onrender.com'
 const WARP_URL = 'https://d1o5nlqr4okus2.cloudfront.net/gateway/contracts/deploy'
-const STAMP_CONTRACT = 'aSMILD7cEJr93i7TAVzzMjtci_sGkXcWnqpDkG6UGcA'
+const STAMP_CONTRACT = 'jAE_V6oXkb0dohIOjReMhrTlgLW0X2j3rxIZ5zgbjXw'
 const BAR = 'VFr3Bk-uM-motpNNkkFg4lNW1BMmSfzqsVO551Ho4hA'
 const VOUCH_DAO = '_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk'
 
