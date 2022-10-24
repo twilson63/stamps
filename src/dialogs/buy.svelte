@@ -42,7 +42,7 @@
           <input
             id="spend"
             type="number"
-            class="input input-bordered w-full"
+            class="input input-bordered w-full dark:bg-white dark:text-[#160042]"
             bind:value={qty}
             min="0"
             required
@@ -70,3 +70,15 @@
     </form>
   </div>
 </Modal>
+
+<style>
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    /* Firefox */
+  }
+</style>

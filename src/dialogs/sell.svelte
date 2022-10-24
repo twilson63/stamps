@@ -49,7 +49,7 @@
           <input
             id="spend"
             type="number"
-            class="input input-bordered w-full"
+            class="input input-bordered w-full dark:text-[#160042] dark:bg-white"
             bind:value={stamp}
             required
             min="0"
@@ -75,7 +75,7 @@
           <input
             id="spend"
             type="number"
-            class="input input-bordered w-full"
+            class="input input-bordered w-full dark:text-[#160042] dark:bg-white"
             bind:value={price}
             required
             step="0.001"
@@ -101,3 +101,15 @@
     </form>
   </div>
 </Modal>
+
+<style>
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    /* Firefox */
+  }
+</style>

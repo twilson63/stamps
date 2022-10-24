@@ -1,5 +1,5 @@
 import Account from 'arweave-account';
-import { map, path, prop, compose, filter, propEq } from 'ramda';
+import { map, path, prop, compose, concat, filter, propEq, pluck } from 'ramda';
 import { barToAtomic, stampToAtomic, atomicToStamp, winstonToAr, atomicToBar } from './utils.js'
 import { getDailyRewards } from './rewards.js'
 
@@ -16,24 +16,42 @@ const warp = WarpFactory.forMainnet()
 
 const GATEWAY = 'https://arweave.net'
 const REDSTONE_GATEWAY = 'https://gateway.redstone.finance'
-const TRADE_SOURCE_ID = 'BzNLxND_nJEMfcLWShyhU4i9BnzEWaATo6FYFsfsO0Q'
 const CACHE = 'https://cache.permapages.app'
-//const CACHE = 'https://3000-twilson63-barcache-sibrgc2jwpv.ws-us71.gitpod.io'
-const BAR_CACHE = 'https://bar-cache.onrender.com'
-const WARP_URL = 'https://d1o5nlqr4okus2.cloudfront.net/gateway/contracts/deploy'
-const STAMP_CONTRACT = 'jAE_V6oXkb0dohIOjReMhrTlgLW0X2j3rxIZ5zgbjXw'
-const BAR = 'VFr3Bk-uM-motpNNkkFg4lNW1BMmSfzqsVO551Ho4hA'
-const VOUCH_DAO = '_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk'
+
+const TRADE_SOURCE_ID = __TRADE_SOURCE_ID__
+const STAMP_CONTRACT = __STAMP_CONTRACT__
+const BAR = __BAR_CONTRACT__
+const VOUCH_DAO = __VOUCH_DAO__
 const STAMP_UNIT = 1e12
 const BAR_UNIT = 1e6
 
 const account = new Account()
 
-let stampState = null
+export const cancelOrder = (id) => {
+  const stampContract = warp.contract(STAMP_CONTRACT)
+    .connect('use_wallet')
+    .setEvaluationOptions({
+      internalWrites: true,
+      allowBigInt: true,
+      allowUnsafeClient: true
+    })
+
+  return stampContract.writeInteraction({
+    function: 'cancelOrder',
+    orderID: id
+  })
+}
+
+export const getOpenOrders = (addr) => getStampState().then(compose(
+  filter(propEq('creator', addr)),
+  ([a, b]) => concat(a, b),
+  pluck('orders'),
+  prop('pairs')
+))
+//.then(x => (console.log('orders: ', x), x))
 
 export const getVouchUsers = () => fetch(`https://cache.permapages.app/${VOUCH_DAO}`)
   .then(res => res.json())
-  .then(x => (console.log(x), x))
   .then(state => Object.keys(state.vouched).length)
   .catch(e => 'N/A')
 

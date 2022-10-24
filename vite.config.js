@@ -11,6 +11,12 @@ const publicUrl = `3000-${host}`
 export default defineConfig({
   base: '',
   plugins: [svelte()],
+  define: {
+    __STAMP_CONTRACT__: '"jAE_V6oXkb0dohIOjReMhrTlgLW0X2j3rxIZ5zgbjXw"',
+    __BAR_CONTRACT__: '"VFr3Bk-uM-motpNNkkFg4lNW1BMmSfzqsVO551Ho4hA"',
+    __VOUCH_DAO__: '"_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk"',
+    __TRADE_SOURCE_ID__: '"BzNLxND_nJEMfcLWShyhU4i9BnzEWaATo6FYFsfsO0Q"'
+  },
   server: {
     hmr: {
       clientPort: host ? 443 : 3000,

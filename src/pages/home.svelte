@@ -12,7 +12,9 @@
     getLatestWinners,
     getAccount,
     getVouchUsers,
+    getOpenOrders,
   } from "../lib/app.js";
+  import Order from "../components/order.svelte";
   import Connect from "../dialogs/connect.svelte";
   import Help from "../dialogs/wallet-help.svelte";
   import Buy from "../dialogs/buy.svelte";
@@ -108,6 +110,7 @@
             <div class="stat-value text-[#231F1F] dark:invert">{count}</div>
           </div>
         {/await}
+
         {#await getVouchUsers() then count}
           <div class="stat place-items-center">
             <div class="stat-title">Total Vouched Users</div>
@@ -183,6 +186,14 @@
           <button class="btn">Purchase StampCoin</button>
           -->
         </div>
+        <!-- Get Open Orders -->
+        {#await getOpenOrders($profile.addr) then orders}
+          <h2>My Open Orders</h2>
+          {#each orders as order}
+            <Order {order} />
+          {/each}
+        {/await}
+        <!-- Get Stamps -->
       {:else}
         <div class="h-[100px] grid place-items-center">
           <button

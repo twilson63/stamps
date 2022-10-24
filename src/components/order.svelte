@@ -1,4 +1,6 @@
 <script>
+  import { cancelOrder } from "../lib/app.js";
+
   export let order = {
     id: "s27eDFgwtraSH4hbWHVH7yOhNohOYChsVkGO2dOC3YU",
     transfer: "INTERNAL_TRANSFER",
@@ -10,10 +12,11 @@
   };
 </script>
 
-<div>
+<div class="flex flex-col">
   <h3>Open Order</h3>
   <p>id: {order.id}</p>
-  <p>Quantity Available: {order.quantity}</p>
-  <p>Original Quantity: {order.originalQuantity}</p>
+  <p>Quantity Available: {Number(order.quantity) / 1e12}</p>
+  <p>Original Quantity: {Number(order.originalQuantity) / 1e12}</p>
   <p>Price: {order.price * 1e6}</p>
+  <button class="btn" on:click={() => cancelOrder(order.id)}>Cancel</button>
 </div>
