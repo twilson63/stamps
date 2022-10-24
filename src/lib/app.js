@@ -24,6 +24,8 @@ const WARP_URL = 'https://d1o5nlqr4okus2.cloudfront.net/gateway/contracts/deploy
 const STAMP_CONTRACT = 'jAE_V6oXkb0dohIOjReMhrTlgLW0X2j3rxIZ5zgbjXw'
 const BAR = 'VFr3Bk-uM-motpNNkkFg4lNW1BMmSfzqsVO551Ho4hA'
 const VOUCH_DAO = '_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk'
+const STAMP_UNIT = 1e12
+const BAR_UNIT = 1e6
 
 const account = new Account()
 
@@ -48,41 +50,44 @@ export const getRewardHistory = (asset) => fetch(`${CACHE}/${STAMP_CONTRACT}`)
   )
 
 async function getStampState() {
-  if (stampState) {
-    return stampState
-  }
-  return await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
-    .catch(_ => warp.contract(STAMP_CONTRACT).setEvaluationOptions({
-      internalWrites: true,
-      allowBigInt: true,
-      allowUnsafeClient: true
-    }).readState().then(prop('state')))
+  return warp.contract(STAMP_CONTRACT).setEvaluationOptions({
+    internalWrites: true,
+    allowBigInt: true,
+    allowUnsafeClient: true
+  }).readState().then(path(['cachedValue', 'state']))
 }
 
 export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
   try {
     const qty = Number(barToAtomic(stampCoinQty * stampPrice))
-    const prestate = await getStampState()
-    const balance = prestate.balances[addr]
+    const barContract = warp.contract(BAR).connect('use_wallet').setEvaluationOptions({
+      internalWrites: true,
+      allowBigInt: true
+    })
+    const stampContract = warp.contract(STAMP_CONTRACT).connect('use_wallet').setEvaluationOptions({
+      internalWrites: true,
+      allowBigInt: true,
+      allowUnsafeClient: true
+    })
 
-    const allowTx = await allow(qty)
+    const allowTx = await barContract.writeInteraction({
+      function: 'allow',
+      target: STAMP_CONTRACT,
+      qty
+    }).then(prop('originalTxId'))
 
-    await new Promise(resolve => setTimeout(resolve, 500))
-
-    await createOrder({
+    return await stampContract.writeInteraction({
+      function: 'createOrder',
       pair: [BAR, STAMP_CONTRACT],
       qty,
       transaction: allowTx
     })
+      .then(_ => stampContract.readState())
+      .then(path(['cachedValue', 'state']))
+      .then(state => {
+        return Number(atomicToStamp(state.balances[addr])).toFixed(2)
+      })
 
-    await new Promise(resolve => setTimeout(resolve, 500))
-    // how to confirm the order is complete?
-    stampState = await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
-    const newbalance = stampState.balances[addr]
-    if (newbalance != balance + qty) {
-      throw new Error('purchase did not work')
-    }
-    return Number(atomicToStamp(newbalance)).toFixed(2)
   } catch (e) {
     console.log(e)
 
@@ -92,47 +97,24 @@ export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
 
 export async function sellStampCoin(stampCoinQty, stampPrice, addr) {
   const qty = Number(stampToAtomic(stampCoinQty))
-  const price = Number(barToAtomic(stampPrice)) / 1e12
-  const prestate = await getStampState()
-  const balance = prestate.balances[addr]
-  const tx = await arweave.createTransaction({
-    data: Math.random().toString().slice(-4),
-    reward: '72600854',
-    last_tx: 'p7vc1iSP6bvH_fCeUFa9LqoV5qiyW-jdEKouAT0XMoSwrNraB9mgpi29Q10waEpO'
-  })
-  tx.addTag('App-Name', 'SmartWeaveAction')
-  tx.addTag('App-Version', '0.3.0')
-  tx.addTag('Contract', STAMP_CONTRACT)
-  tx.addTag('Input', JSON.stringify({
+  const price = (stampPrice * BAR_UNIT) / STAMP_UNIT
+  const stampContract = warp.contract(STAMP_CONTRACT).connect('use_wallet')
+    .setEvaluationOptions({
+      internalWrites: true,
+      allowBigInt: true,
+      allowUnsafeClient: true
+    })
+
+  return stampContract.writeInteraction({
     function: 'createOrder',
     pair: [STAMP_CONTRACT, BAR],
     qty,
     price
-  }))
-  tx.addTag('SDK', 'Warp')
-
-  await arweave.transactions.sign(tx)
-
-  await fetch(`${REDSTONE_GATEWAY}/gateway/sequencer/register`, {
-    method: 'POST',
-    body: JSON.stringify(tx),
-    headers: {
-      'Accept-Encoding': 'gzip, deflate, br',
-      'Content-Type': 'application/json',
-      Accept: 'application/json'
-    }
-  }).then(res => res.ok ? res.json() : Promise.reject(res))
-
-
-  await new Promise(resolve => setTimeout(resolve, 500))
-  // how to confirm the order is complete?
-  stampState = await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
-  const newbalance = stampState.balances[addr]
-  if (balance !== (newbalance + qty)) {
-    throw new Error('balance does not equal new balance plus qty')
-  }
-
-  return Number(atomicToStamp(newbalance)).toFixed(2)
+  }).then(_ => stampContract.readState())
+    .then(path(['cachedValue', 'state']))
+    .then(state => {
+      return Number(atomicToStamp(state.balances[addr])).toFixed(2)
+    })
 }
 
 export async function getAssetCount() {
@@ -227,8 +209,13 @@ export const getArBalance = async (addr) => {
 }
 
 export const getBARBalance = async (addr) => {
-  return fetch(`${BAR_CACHE}/${BAR}`).then(res => res.ok ? res.json() : Promise.reject(new Error('could not get bar balance')))
-    //return warp.contract(BAR).readState().then(res => res.state)
+  //return fetch(`${BAR_CACHE}/${BAR}`).then(res => res.ok ? res.json() : Promise.reject(new Error('could not get bar balance')))
+  //return warp.contract(BAR).readState().then(res => res.state)
+  return warp.contract(BAR).setEvaluationOptions({
+    internalWrites: true,
+    allowBigInt: true
+  }).readState()
+    .then(path(['cachedValue', 'state']))
     .then(state => state.balances[addr] ? state.balances[addr] : 0)
     .then(atomicToBar)
     .then(x => Number(x).toFixed(4))
@@ -239,64 +226,11 @@ export const getCurrentPrice = async () => {
   return getStampState()
     .then(s => s.pairs.find(({ pair, orders }) => pair[0] === STAMP_CONTRACT && pair[1] === BAR))
     .then(({ pair, orders }) => orders.reduce((a, v) => v.price < a ? v.price : a, Infinity))
+    .then(x => (console.log('price', x), x))
     .then(price => (Number(price) * 1e6).toFixed(2))
     .catch(e => {
       console.log(e)
       return 0
     })
 
-}
-
-async function allow(amount) {
-  const tx = await arweave.createTransaction({
-    data: Math.random().toString().slice(-4),
-    reward: '72600854',
-    last_tx: 'p7vc1iSP6bvH_fCeUFa9LqoV5qiyW-jdEKouAT0XMoSwrNraB9mgpi29Q10waEpO'
-  })
-  tx.addTag('App-Name', 'SmartWeaveAction')
-  tx.addTag('App-Version', '0.3.0')
-  tx.addTag('Contract', BAR)
-  tx.addTag('Input', JSON.stringify({
-    function: 'allow',
-    target: STAMP_CONTRACT,
-    qty: amount
-  }))
-  tx.addTag('SDK', 'Warp')
-
-  await arweave.transactions.sign(tx)
-
-  return await writeInteraction(tx)
-    .then(_ => tx.id)
-    .then(x => (console.log('allowTx: ', x), x))
-}
-
-async function createOrder(input) {
-  input.function = 'createOrder'
-  const tx = await arweave.createTransaction({
-    data: Math.random().toString().slice(-4),
-    reward: '72600854',
-    last_tx: 'p7vc1iSP6bvH_fCeUFa9LqoV5qiyW-jdEKouAT0XMoSwrNraB9mgpi29Q10waEpO'
-  })
-  tx.addTag('App-Name', 'SmartWeaveAction')
-  tx.addTag('App-Version', '0.3.0')
-  tx.addTag('Contract', STAMP_CONTRACT)
-  tx.addTag('Input', JSON.stringify(input))
-  tx.addTag('SDK', 'Warp')
-
-  await arweave.transactions.sign(tx)
-
-  return await writeInteraction(tx)
-
-}
-
-function writeInteraction(tx) {
-  return fetch(`${REDSTONE_GATEWAY}/gateway/sequencer/register`, {
-    method: 'POST',
-    body: JSON.stringify(tx),
-    headers: {
-      'Accept-Encoding': 'gzip, deflate, br',
-      'Content-Type': 'application/json',
-      Accept: 'application/json'
-    }
-  }).then(res => res.ok ? res.json() : Promise.reject(res))
 }

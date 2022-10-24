@@ -94,24 +94,24 @@
 <main>
   <section class="hero min-h-screen bg-base-100 items-start">
     <div class="hero-content flex-col">
-      <h1 class="text-4xl font-bold text-[#231F1F]">STAMPS</h1>
+      <h1 class="text-4xl font-bold text-[#231F1F] dark:invert">STAMPS</h1>
       <div class="stats">
         {#await getAssetCount() then count}
           <div class="stat place-items-center">
             <div class="stat-title">Tradeable Atomic Assets</div>
-            <div class="stat-value text-[#231F1F]">{count}</div>
+            <div class="stat-value text-[#231F1F] dark:invert">{count}</div>
           </div>
         {/await}
         {#await getStampCount() then count}
           <div class="stat place-items-center">
             <div class="stat-title">Total Stamps Created</div>
-            <div class="stat-value text-[#231F1F]">{count}</div>
+            <div class="stat-value text-[#231F1F] dark:invert">{count}</div>
           </div>
         {/await}
         {#await getVouchUsers() then count}
           <div class="stat place-items-center">
             <div class="stat-title">Total Vouched Users</div>
-            <div class="stat-value text-[#231F1F]">{count}</div>
+            <div class="stat-value text-[#231F1F] dark:invert">{count}</div>
           </div>
         {/await}
       </div>
@@ -234,7 +234,7 @@
                             href="https://arweave.net/{asset.id}"
                             ><img
                               src="assets/view.svg"
-                              class="h-[24px] w-[24px]"
+                              class="h-[24px] w-[24px] dark:invert"
                               alt="view asset"
                             /></a
                           >
