@@ -85,7 +85,7 @@
   }
 
   async function getBalances() {
-    $balances = { assets: 0, stampcoins: 0, bar: 0, ar: 0 };
+    $balances = { assets: -1, stampcoins: -1, bar: -1, ar: -1 };
     $balances.assets = await getUserAssets($profile.addr);
     $balances.stampcoins = await myStampCoins();
     $balances.bar = await getBARBalance($profile.addr);
@@ -104,7 +104,14 @@
             <div class="stat-value text-[#231F1F] dark:invert">{count}</div>
           </div>
         {/await}
-        {#await getStampCount() then count}
+        {#await getStampCount()}
+          <div class="stat place-items-center">
+            <div class="stat-title">Total Stamps Created</div>
+            <div class="stat-value text-[#231F1F] dark:invert">
+              <button class="btn btn-ghost loading">&nbsp;&nbsp;</button>
+            </div>
+          </div>
+        {:then count}
           <div class="stat place-items-center">
             <div class="stat-title">Total Stamps Created</div>
             <div class="stat-value text-[#231F1F] dark:invert">{count}</div>
@@ -142,35 +149,49 @@
             <div class="stat place-items-center">
               <div class="stat-title">Atomic Assets</div>
               <div class="stat-value">
-                {$balances.assets}
+                {#if $balances.assets > -1}
+                  {$balances.assets}
+                {:else}
+                  <button class="btn btn-ghost loading">&nbsp;&nbsp;</button>
+                {/if}
               </div>
             </div>
             <div class="stat place-items-center">
               <div class="stat-title">StampCoin Balance</div>
               <div class="stat-value">
-                {$balances.stampcoins}
+                {#if $balances.stampcoins > -1}
+                  {$balances.stampcoins}
+                {:else}
+                  <button class="btn btn-ghost loading">&nbsp;&nbsp;</button>
+                {/if}
               </div>
             </div>
             <div class="stat place-items-center">
               <div class="stat-title">burned AR Balance</div>
               <div class="stat-value">
-                {$balances.bar}
+                {#if $balances.bar > -1}
+                  {$balances.bar}
+                {:else}
+                  <button class="btn btn-ghost loading">&nbsp;&nbsp;</button>
+                {/if}
               </div>
             </div>
             <div class="stat place-items-center">
               <div class="stat-title">AR Balance</div>
               <div class="stat-value">
-                {$balances.ar}
+                {#if $balances.ar > -1}
+                  {$balances.ar}
+                {:else}
+                  <button class="btn btn-ghost loading">&nbsp;&nbsp;</button>
+                {/if}
               </div>
             </div>
           </div>
         </div>
         <div>
-          {#if ["vh-NTHVvlKZqRxc8LyyTNok65yQ55a_PJ1zWLb9G2JI", "vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw"].includes($profile.addr)}
-            <button class="btn rounded-none" on:click={() => (showBuy = true)}
-              >Buy</button
-            >
-          {/if}
+          <button class="btn rounded-none" on:click={() => (showBuy = true)}
+            >Buy</button
+          >
           <button class="btn rounded-none" on:click={() => (showSell = true)}
             >Sell</button
           >
