@@ -223,63 +223,65 @@
           >
         </div>
       {/if}
-      <div class="flex flex-col">
-        <h3 class="text-2xl">Recent Stamp Coin Winners</h3>
-        {#await getLatestWinners() then assets}
-          {#each assets as asset}
-            {#await getAccount(asset.creator) then acct}
-              <div class="card w-[400px] md:w-[800px] shadow-xl">
-                <div class="flex space-x-4 items-center">
-                  <img
-                    src={acct.profile.avatarURL}
-                    class="m-4 mask mask-circle h-[128px] w-[128px]"
-                    alt={acct.profile.handle}
-                  />
+      {#if !$profile}
+        <div class="flex flex-col">
+          <h3 class="text-2xl">Recent Stamp Coin Winners</h3>
+          {#await getLatestWinners() then assets}
+            {#each assets as asset}
+              {#await getAccount(asset.creator) then acct}
+                <div class="card w-[400px] md:w-[800px] shadow-xl">
+                  <div class="flex space-x-4 items-center">
+                    <img
+                      src={acct.profile.avatarURL}
+                      class="m-4 mask mask-circle h-[128px] w-[128px]"
+                      alt={acct.profile.handle}
+                    />
 
-                  <div class="card-body">
-                    <div class="card-title">{asset.title}</div>
-                    <div>{asset.description}</div>
-                    <div class="flex space-x-4">
-                      <div class="flex flex-col">
-                        <div class="font-bold">Rewards</div>
-                        <div>{asset.coins}</div>
-                      </div>
-                      <div class="flex-1 flex flex-col">
-                        <div class="font-bold">Creator</div>
-                        <div>
-                          {acct.profile.handleName}
-                          <a
-                            href="https://v2.viewblock.io/arweave/address/{asset.creator}"
-                          >
-                            {`${take(5, asset.creator)}...${takeLast(
-                              5,
-                              asset.creator
-                            )}`}
-                          </a>
+                    <div class="card-body">
+                      <div class="card-title">{asset.title}</div>
+                      <div>{asset.description}</div>
+                      <div class="flex space-x-4">
+                        <div class="flex flex-col">
+                          <div class="font-bold">Rewards</div>
+                          <div>{asset.coins}</div>
                         </div>
-                      </div>
-                      <div class="flex flex-col">
-                        <div class="font-bold">View</div>
-                        <div>
-                          <a
-                            target="_blank"
-                            href="https://arweave.net/{asset.id}"
-                            ><img
-                              src="assets/view.svg"
-                              class="h-[24px] w-[24px] dark:invert"
-                              alt="view asset"
-                            /></a
-                          >
+                        <div class="flex-1 flex flex-col">
+                          <div class="font-bold">Creator</div>
+                          <div>
+                            {acct.profile.handleName}
+                            <a
+                              href="https://v2.viewblock.io/arweave/address/{asset.creator}"
+                            >
+                              {`${take(5, asset.creator)}...${takeLast(
+                                5,
+                                asset.creator
+                              )}`}
+                            </a>
+                          </div>
+                        </div>
+                        <div class="flex flex-col">
+                          <div class="font-bold">View</div>
+                          <div>
+                            <a
+                              target="_blank"
+                              href="https://arweave.net/{asset.id}"
+                              ><img
+                                src="assets/view.svg"
+                                class="h-[24px] w-[24px] dark:invert"
+                                alt="view asset"
+                              /></a
+                            >
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            {/await}
-          {/each}
-        {/await}
-      </div>
+              {/await}
+            {/each}
+          {/await}
+        </div>
+      {/if}
     </div>
   </section>
 </main>

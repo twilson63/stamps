@@ -42,13 +42,15 @@ export const cancelOrder = (id) => {
   })
 }
 
-export const getOpenOrders = (addr) => getStampState().then(compose(
-  filter(propEq('creator', addr)),
-  ([a, b]) => concat(a, b),
-  pluck('orders'),
-  prop('pairs')
-))
-//.then(x => (console.log('orders: ', x), x))
+export const getOpenOrders = (addr) => getStampState()
+  .then(compose(
+    filter(propEq('creator', addr)),
+    prop('0'),
+    pluck('orders'),
+    prop('pairs')
+  ))
+  .then(x => (console.log('orders: ', x), x))
+
 
 export const getVouchUsers = () => fetch(`https://cache.permapages.app/${VOUCH_DAO}`)
   .then(res => res.json())
@@ -67,12 +69,29 @@ export const getRewardHistory = (asset) => fetch(`${CACHE}/${STAMP_CONTRACT}`)
     )
   )
 
+let stampState = null
+let stampCheckTS = null
 async function getStampState() {
-  return warp.contract(STAMP_CONTRACT).setEvaluationOptions({
+  warp.contract(STAMP_CONTRACT).setEvaluationOptions({
     internalWrites: true,
     allowBigInt: true,
     allowUnsafeClient: true
-  }).readState().then(path(['cachedValue', 'state']))
+  }).readState() // keep indexDb cache up to date...
+    .then(path(['cachedValue', 'state']))
+    .then(state => stampState = state)
+
+  // only ping cache every 5 minutes
+  if (!stampState) {
+    stampCheckTS = Date.now()
+    return fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
+  } else if (Date.now() < (stampCheckTS + 5 * 60 * 1000)) {
+    return stampState
+  } else {
+    stampCheckTS = Date.now()
+    return fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
+  }
+
+
 }
 
 export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
@@ -227,16 +246,23 @@ export const getArBalance = async (addr) => {
 }
 
 export const getBARBalance = async (addr) => {
-  //return fetch(`${BAR_CACHE}/${BAR}`).then(res => res.ok ? res.json() : Promise.reject(new Error('could not get bar balance')))
-  //return warp.contract(BAR).readState().then(res => res.state)
-  return warp.contract(BAR).setEvaluationOptions({
-    internalWrites: true,
-    allowBigInt: true
-  }).readState()
-    .then(path(['cachedValue', 'state']))
+  /*
+  return fetch(`${CACHE}/${BAR}`).then(res => res.ok ? res.json() : Promise.reject(new Error('could not get bar balance')))
     .then(state => state.balances[addr] ? state.balances[addr] : 0)
     .then(atomicToBar)
     .then(x => Number(x).toFixed(4))
+  */
+  return warp.contract(BAR).setEvaluationOptions({
+    internalWrites: true,
+    allowUnsafeClient: true,
+    allowBigInt: true
+  }).readState()
+    .then(path(['cachedValue', 'state']))
+    .catch(e => fetch(`${CACHE}/${BAR}`).then(res => res.json()))
+    .then(state => state.balances[addr] ? state.balances[addr] : 0)
+    .then(atomicToBar)
+    .then(x => Number(x).toFixed(4))
+
 }
 
 
