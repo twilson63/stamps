@@ -52,6 +52,7 @@
       );
 
       $balances.stampcoins = stampCoinBalance;
+      openOrders = await getOpenOrders($profile.addr);
       showConfirmSell = true;
     } catch (e) {
       errorMessage = e.message;
@@ -81,6 +82,7 @@
   async function myStampCoins() {
     stampBalance = await getStampCoinBalance($profile.addr);
     stampPrice = await getCurrentPrice();
+    console.log("stampPrice", stampPrice);
     return stampBalance;
   }
 
@@ -90,6 +92,10 @@
     $balances.stampcoins = await myStampCoins();
     $balances.bar = await getBARBalance($profile.addr);
     $balances.ar = await getArBalance($profile.addr);
+  }
+
+  async function handleCancelOrder() {
+    openOrders = await getOpenOrders($profile.addr);
   }
 </script>
 
@@ -202,7 +208,9 @@
               $profile = null;
             }}>Disconnect</button
           >
-
+          <button class="btn" on:click={() => getCurrentPrice()}
+            >Get Current Price</button
+          >
           <!--
           <button class="btn">Purchase StampCoin</button>
           -->
@@ -211,7 +219,7 @@
         {#await getOpenOrders($profile.addr) then orders}
           <h2>My Open Orders</h2>
           {#each orders as order}
-            <Order {order} />
+            <Order {order} on:cancel-order={handleCancelOrder} />
           {/each}
         {/await}
         <!-- Get Stamps -->

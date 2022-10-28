@@ -49,7 +49,7 @@ export const getOpenOrders = (addr) => getStampState()
     pluck('orders'),
     prop('pairs')
   ))
-  .then(x => (console.log('orders: ', x), x))
+//.then(x => (console.log('orders: ', x), x))
 
 
 export const getVouchUsers = () => fetch(`https://cache.permapages.app/${VOUCH_DAO}`)
@@ -267,11 +267,17 @@ export const getBARBalance = async (addr) => {
 
 
 export const getCurrentPrice = async () => {
-  return getStampState()
+  return fetch(`https://cache.permapages.app/FMRHYgSijiUNBrFy-XqyNNXenHsCV0ThR4lGAPO4chA`)
+    .then(res => res.json())
+    // keep indexDb cache up to date...
+    //.then(path(['cachedValue', 'state']))
+
     .then(s => s.pairs.find(({ pair, orders }) => pair[0] === STAMP_CONTRACT && pair[1] === BAR))
+
     .then(({ pair, orders }) => orders.reduce((a, v) => v.price < a ? v.price : a, Infinity))
-    .then(x => (console.log('price', x), x))
-    .then(price => (Number(price) * 1e6).toFixed(2))
+
+    .then(price => Math.fround(Number(price) * 1e6).toFixed(6))
+
     .catch(e => {
       console.log(e)
       return 0

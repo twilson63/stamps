@@ -1,5 +1,7 @@
 <script>
   import { cancelOrder } from "../lib/app.js";
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher();
 
   export let order = {
     id: "s27eDFgwtraSH4hbWHVH7yOhNohOYChsVkGO2dOC3YU",
@@ -10,6 +12,11 @@
     quantity: 1e12,
     originalQuantity: 1e12,
   };
+
+  async function doCancelOrder() {
+    await cancelOrder(order.id);
+    dispatch("cancel", { id: order.id });
+  }
 </script>
 
 <div class="card w-148 bg-primary text-primary-content">
@@ -28,12 +35,10 @@
       <div class="stat">
         <div class="stat-title">Price in $BAR</div>
         <div class="stat-value">
-          {Math.fround(order.price * 1e6).toFixed(2)}
+          {Math.fround(order.price * 1e6).toFixed(3)}
         </div>
       </div>
     </div>
-    <button class="btn" on:click={() => cancelOrder(order.id)}
-      >Cancel Order</button
-    >
+    <button class="btn" on:click={doCancelOrder}>Cancel Order</button>
   </div>
 </div>

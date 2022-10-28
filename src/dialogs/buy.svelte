@@ -56,10 +56,10 @@
         </div>
       </div>
       <div class="my-4">
-        <div>Current Price: {price} $bAR / $TAMP</div>
+        <div>Current Price: {Math.fround(price).toFixed(4)} $bAR / $TAMP</div>
       </div>
       <div class="my-4">
-        <div>Total Cost: {bar} $bAR</div>
+        <div>Total Cost: {Number(bar).toFixed(4)} $bAR</div>
       </div>
       <div class="my-4">
         <button
