@@ -208,10 +208,11 @@
               $profile = null;
             }}>Disconnect</button
           >
-          <button class="btn" on:click={() => getCurrentPrice()}
+
+          <!--
+            <button class="btn" on:click={() => getCurrentPrice()}
             >Get Current Price</button
           >
-          <!--
           <button class="btn">Purchase StampCoin</button>
           -->
         </div>
