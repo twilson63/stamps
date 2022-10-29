@@ -246,12 +246,12 @@ export const getArBalance = async (addr) => {
 }
 
 export const getBARBalance = async (addr) => {
-  /*
+
   return fetch(`${CACHE}/${BAR}`).then(res => res.ok ? res.json() : Promise.reject(new Error('could not get bar balance')))
     .then(state => state.balances[addr] ? state.balances[addr] : 0)
     .then(atomicToBar)
     .then(x => Number(x).toFixed(4))
-  */
+  /*
   return warp.contract(BAR).setEvaluationOptions({
     internalWrites: true,
     allowUnsafeClient: true,
@@ -262,12 +262,12 @@ export const getBARBalance = async (addr) => {
     .then(state => state.balances[addr] ? state.balances[addr] : 0)
     .then(atomicToBar)
     .then(x => Number(x).toFixed(4))
-
+  */
 }
 
 
 export const getCurrentPrice = async () => {
-  return fetch(`https://cache.permapages.app/FMRHYgSijiUNBrFy-XqyNNXenHsCV0ThR4lGAPO4chA`)
+  return fetch(`${CACHE}/${STAMP_CONTRACT}`)
     .then(res => res.json())
     // keep indexDb cache up to date...
     //.then(path(['cachedValue', 'state']))
