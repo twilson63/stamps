@@ -180,64 +180,17 @@ export async function getAccount(addr) {
 }
 
 export async function getUserAssets(addr) {
-  const query = `
-  query {
-    transactions(
-      first: 100, 
-      owners: ["${addr}"],
-      tags: {name: "Contract-Src", values: ["${TRADE_SOURCE_ID}"]}) {
-        edges {
-          cursor
-          node {
-            id
-          }
-        }
-      }
-  }      
-        
-  `
 
-  return fetch(`${GATEWAY}/graphql`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query
-    })
-  }).then(res => res.ok ? res.json() : Promise.reject(new Error('Could not get data')))
-    .then(data => {
-      const edges = path(['data', 'transactions', 'edges'], data)
-      if (edges.length === 0) { return 0 }
-      const query = `
-query {
-  transactions(
-    first: 100,
-    after: "${edges[edges.length - 1].cursor}", 
-    owners: ["${addr}"],
-    tags: {name: "Contract-Src", values: ["${TRADE_SOURCE_ID}", "${TRADE_SOURCE_OLD}"]}) {
-      edges {
-        cursor
-        node {
-          id
-        }
-      }
-    }
-}      
-      `
-      if (edges.length >= 100) {
-        return fetch(`${GATEWAY}/graphql`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query
-          })
-        }).then(res => res.ok ? res.json() : Promise.reject(new Error('Could not get data')))
-          .then(path(['data', 'transactions', 'edges']))
-          .then(e => e.length + edges.length)
-      } else {
-        return edges.length
-      }
-    })
-
+  return Promise.all([
+    fetch(`${REDSTONE_GATEWAY}/gateway/contracts-by-source?id=${TRADE_SOURCE_ID}`)
+      .then(res => res.json())
+      .then(data => data.contracts.filter(c => c.owner === addr).length)
+    ,
+    fetch(`${REDSTONE_GATEWAY}/gateway/contracts-by-source?id=${TRADE_SOURCE_OLD}`)
+      .then(res => res.json())
+      .then(data => data.contracts.filter(c => c.owner === addr).length)
+  ])
+    .then(([a, b]) => a + b)
 }
 
 export const getStampCoinBalance = async (addr) => {
