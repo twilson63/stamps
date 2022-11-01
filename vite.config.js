@@ -15,7 +15,8 @@ export default defineConfig({
     __STAMP_CONTRACT__: '"FMRHYgSijiUNBrFy-XqyNNXenHsCV0ThR4lGAPO4chA"',
     __BAR_CONTRACT__: '"VFr3Bk-uM-motpNNkkFg4lNW1BMmSfzqsVO551Ho4hA"',
     __VOUCH_DAO__: '"_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk"',
-    __TRADE_SOURCE_ID__: '"BzNLxND_nJEMfcLWShyhU4i9BnzEWaATo6FYFsfsO0Q"'
+    __TRADE_SOURCE_ID__: '"x0ojRwrcHBmZP20Y4SY0mgusMRx-IYTjg5W8c3UFoNs"',
+    __TRADE_SOURCE_OLD__: '"BzNLxND_nJEMfcLWShyhU4i9BnzEWaATo6FYFsfsO0Q"'
   },
   server: {
     hmr: {

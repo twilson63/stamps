@@ -19,6 +19,7 @@ const REDSTONE_GATEWAY = 'https://gateway.redstone.finance'
 const CACHE = 'https://cache.permapages.app'
 
 const TRADE_SOURCE_ID = __TRADE_SOURCE_ID__
+const TRADE_SOURCE_OLD = __TRADE_SOURCE_OLD__
 const STAMP_CONTRACT = __STAMP_CONTRACT__
 const BAR = __BAR_CONTRACT__
 const VOUCH_DAO = __VOUCH_DAO__
@@ -72,13 +73,13 @@ export const getRewardHistory = (asset) => fetch(`${CACHE}/${STAMP_CONTRACT}`)
 let stampState = null
 let stampCheckTS = null
 async function getStampState() {
-  warp.contract(STAMP_CONTRACT).setEvaluationOptions({
-    internalWrites: true,
-    allowBigInt: true,
-    allowUnsafeClient: true
-  }).readState() // keep indexDb cache up to date...
-    .then(path(['cachedValue', 'state']))
-    .then(state => stampState = state)
+  // warp.contract(STAMP_CONTRACT).setEvaluationOptions({
+  //   internalWrites: true,
+  //   allowBigInt: true,
+  //   allowUnsafeClient: true
+  // }).readState() // keep indexDb cache up to date...
+  //   .then(path(['cachedValue', 'state']))
+  //   .then(state => stampState = state)
 
   // only ping cache every 5 minutes
   if (!stampState) {
@@ -155,9 +156,17 @@ export async function sellStampCoin(stampCoinQty, stampPrice, addr) {
 }
 
 export async function getAssetCount() {
-  return fetch(`${REDSTONE_GATEWAY}/gateway/contracts-by-source?id=${TRADE_SOURCE_ID}`)
-    .then(res => res.json())
-    .then(data => data.paging.items)
+  return Promise.all([
+    fetch(`${REDSTONE_GATEWAY}/gateway/contracts-by-source?id=${TRADE_SOURCE_ID}`)
+      .then(res => res.json())
+      .then(data => data.paging.items)
+    ,
+    fetch(`${REDSTONE_GATEWAY}/gateway/contracts-by-source?id=${TRADE_SOURCE_OLD}`)
+      .then(res => res.json())
+      .then(data => data.paging.items)
+  ])
+    .then(([a, b]) => a + b)
+
 }
 
 export async function getStampCount() {
@@ -204,7 +213,7 @@ query {
     first: 100,
     after: "${edges[edges.length - 1].cursor}", 
     owners: ["${addr}"],
-    tags: {name: "Contract-Src", values: ["${TRADE_SOURCE_ID}"]}) {
+    tags: {name: "Contract-Src", values: ["${TRADE_SOURCE_ID}", "${TRADE_SOURCE_OLD}"]}) {
       edges {
         cursor
         node {
