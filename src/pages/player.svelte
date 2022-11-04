@@ -26,6 +26,9 @@
 <main class="hero min-h-screen items-start">
   <section class="hero-content flex-col">
     <h1 class="text-4xl">Stamp Player Stats</h1>
+    <div class="flex items-center justify-center">
+      <a class="btn btn-outline rounded-none" href="/">Leaderboard</a>
+    </div>
     {#if profile}
       <div class="border-2 border-gray-400 rounded-xl p-8">
         <div class="flex flex-col items-center space-y-4 mb-8">

@@ -28,9 +28,9 @@ const BAR_UNIT = 1e6
 
 const account = new Account()
 
-export const getTop5 = async () => {
+export const getTop25 = async () => {
   const { balances } = await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
-  const leaders = take(5, sortWith([descend(prop(0))], map(([k, v]) => [v, k], toPairs(balances))))
+  const leaders = take(25, sortWith([descend(prop(0))], map(([k, v]) => [v, k], toPairs(balances))))
   // for each leader get account.
   return Promise.all(map(
     ([rewards, address]) => account.get(address).then(assoc('rewards', Number(rewards / 1e12).toFixed(4))),

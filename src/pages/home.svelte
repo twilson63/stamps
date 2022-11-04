@@ -13,7 +13,7 @@
     getAccount,
     getVouchUsers,
     getOpenOrders,
-    getTop5,
+    getTop25,
   } from "../lib/app.js";
   import Order from "../components/order.svelte";
   import Connect from "../dialogs/connect.svelte";
@@ -37,7 +37,7 @@
   let stampBalance;
   let stampPrice;
   let openOrders = [];
-  let recentWinners = true;
+  let recentWinners = false;
 
   $: {
     if ($profile) {
@@ -246,19 +246,19 @@
         <div class="flex flex-col">
           <h3 class="text-2xl mb-8">
             <button
-              class={recentWinners ? "text-blue-400" : "link"}
-              on:click={() => (recentWinners = true)}
-              disabled={recentWinners}
-            >
-              Recent Stamp Coin Winners
-            </button>
-            |
-            <button
               class={!recentWinners ? "text-blue-400" : "link"}
               on:click={() => (recentWinners = false)}
               disabled={!recentWinners}
             >
               Stamp Coin Leaders
+            </button>
+            |
+            <button
+              class={recentWinners ? "text-blue-400" : "link"}
+              on:click={() => (recentWinners = true)}
+              disabled={recentWinners}
+            >
+              Recent Stamp Coin Winners
             </button>
           </h3>
           {#if recentWinners}
@@ -279,7 +279,10 @@
                         <div class="flex space-x-4">
                           <div class="flex flex-col">
                             <div class="font-bold">Rewards</div>
-                            <div>{asset.coins}</div>
+                            <div>
+                              {asset.coins}
+                              <span class="font-bold">$STAMP</span>
+                            </div>
                           </div>
                           <div class="flex-1 flex flex-col">
                             <div class="font-bold">Creator</div>
@@ -317,7 +320,7 @@
               {/each}
             {/await}
           {:else}
-            {#await getTop5() then accounts}
+            {#await getTop25() then accounts}
               {#each accounts as account}
                 <div class="card w-[400px] md:w-[800px] shadow-xl">
                   <div class="flex space-x-4 items-center">
@@ -333,7 +336,16 @@
                       <div class="flex space-x-4">
                         <div class="flex flex-col">
                           <div class="font-bold">Rewards</div>
-                          <div>{account.rewards}</div>
+                          <div>
+                            {account.rewards}
+                            <span class="font-bold">$STAMP</span>
+                          </div>
+                        </div>
+                        <div class="flex-1 flex justify-end items-center">
+                          <a
+                            href="/player/{account.addr}"
+                            class="btn btn-outline rounded-none">View Details</a
+                          >
                         </div>
                       </div>
                     </div>
