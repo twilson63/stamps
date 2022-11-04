@@ -98,33 +98,28 @@ async function getStampState() {
 export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
   try {
     const qty = Number(barToAtomic(stampCoinQty * stampPrice))
-    const barContract = warp.contract(BAR).connect('use_wallet').setEvaluationOptions({
-      internalWrites: true,
-      allowBigInt: true
-    })
-    const stampContract = warp.contract(STAMP_CONTRACT).connect('use_wallet').setEvaluationOptions({
-      internalWrites: true,
-      allowBigInt: true,
-      allowUnsafeClient: true
-    })
 
-    const allowTx = await barContract.writeInteraction({
+    const allowTx = await createTransaction(arweave, BAR, {
       function: 'allow',
       target: STAMP_CONTRACT,
       qty
-    }).then(prop('originalTxId'))
+    })
+    await arweave.transactions.sign(allowTx, 'use_wallet')
+    const transaction = allowTx.id
+    await writeInteraction(allowTx)
 
-    return await stampContract.writeInteraction({
+    const buyTx = await createTransaction(arweave, STAMP_CONTRACT, {
       function: 'createOrder',
       pair: [BAR, STAMP_CONTRACT],
       qty,
-      transaction: allowTx
-    })
-      .then(_ => stampContract.readState())
-      .then(path(['cachedValue', 'state']))
-      .then(state => {
-        return Number(atomicToStamp(state.balances[addr])).toFixed(2)
-      })
+      transaction
+    }, BAR)
+
+    await arweave.transactions.sign(buyTx, 'use_wallet')
+    await writeInteraction(buyTx)
+
+    return fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
+      .then(s => Number(atomicToStamp(s.balances[addr])).toFixed(2))
 
   } catch (e) {
     console.log(e)
@@ -134,25 +129,25 @@ export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
 }
 
 export async function sellStampCoin(stampCoinQty, stampPrice, addr) {
-  const qty = Number(stampToAtomic(stampCoinQty))
-  const price = (stampPrice * BAR_UNIT) / STAMP_UNIT
-  const stampContract = warp.contract(STAMP_CONTRACT).connect('use_wallet')
-    .setEvaluationOptions({
-      internalWrites: true,
-      allowBigInt: true,
-      allowUnsafeClient: true
+  try {
+    const qty = Number(stampToAtomic(stampCoinQty))
+    const price = (stampPrice * BAR_UNIT) / STAMP_UNIT
+    const sellTx = await createTransaction(arweave, STAMP_CONTRACT, {
+      function: 'createOrder',
+      pair: [STAMP_CONTRACT, BAR],
+      qty,
+      price
     })
+    await arweave.transactions.sign(sellTx, 'use_wallet')
 
-  return stampContract.writeInteraction({
-    function: 'createOrder',
-    pair: [STAMP_CONTRACT, BAR],
-    qty,
-    price
-  }).then(_ => stampContract.readState())
-    .then(path(['cachedValue', 'state']))
-    .then(state => {
-      return Number(atomicToStamp(state.balances[addr])).toFixed(2)
-    })
+    await writeInteraction(sellTx)
+
+    return fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
+      .then(s => Number(atomicToStamp(s.balances[addr])).toFixed(2))
+  } catch (e) {
+    console.log('error', e.message)
+    return Promise.reject(new Error('Transcation was rejected!'))
+  }
 }
 
 export async function getAssetCount() {
@@ -245,4 +240,36 @@ export const getCurrentPrice = async () => {
       return 0
     })
 
+}
+
+
+async function createTransaction(arweave, contract, input, interact = null) {
+  const tx = await arweave.createTransaction({
+    data: Math.random().toString().slice(-4),
+    reward: '72600854',
+    last_tx: 'p7vc1iSP6bvH_fCeUFa9LqoV5qiyW-jdEKouAT0XMoSwrNraB9mgpi29Q10waEpO'
+  })
+
+  if (interact) {
+    tx.addTag('Interact-Write', interact)
+  }
+  tx.addTag('App-Name', 'SmartWeaveAction')
+  tx.addTag('App-Version', '0.3.0')
+  tx.addTag('Contract', contract)
+  tx.addTag('Input', JSON.stringify(input))
+  tx.addTag('SDK', 'Warp')
+
+  return tx
+}
+
+function writeInteraction(tx) {
+  return fetch(`${REDSTONE_GATEWAY}/gateway/sequencer/register`, {
+    method: 'POST',
+    body: JSON.stringify(tx),
+    headers: {
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    }
+  }).then(res => res.ok ? res.json() : Promise.reject(res))
 }

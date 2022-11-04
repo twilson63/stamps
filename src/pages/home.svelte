@@ -35,6 +35,13 @@
   let errorMessage = "Something went wrong";
   let stampBalance;
   let stampPrice;
+  let openOrders = [];
+
+  $: {
+    if ($profile) {
+      getOpenOrders($profile.addr).then((orders) => (openOrders = orders));
+    }
+  }
 
   async function handleSell(e) {
     try {
@@ -217,12 +224,13 @@
           -->
         </div>
         <!-- Get Open Orders -->
-        {#await getOpenOrders($profile.addr) then orders}
+        {#if openOrders.length > 0}
           <h2>My Open Orders</h2>
-          {#each orders as order}
-            <Order {order} on:cancel-order={handleCancelOrder} />
-          {/each}
-        {/await}
+        {/if}
+        {#each openOrders as order}
+          <Order {order} on:cancel-order={handleCancelOrder} />
+        {/each}
+
         <!-- Get Stamps -->
       {:else}
         <div class="h-[100px] grid place-items-center">
