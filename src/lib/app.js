@@ -1,5 +1,5 @@
 import Account from 'arweave-account';
-import { map, path, prop, compose, concat, filter, propEq, pluck } from 'ramda';
+import { assoc, map, path, prop, compose, concat, filter, propEq, pluck, sortWith, descend, toPairs, take } from 'ramda';
 import { barToAtomic, stampToAtomic, atomicToStamp, winstonToAr, atomicToBar } from './utils.js'
 import { getDailyRewards } from './rewards.js'
 
@@ -27,6 +27,16 @@ const STAMP_UNIT = 1e12
 const BAR_UNIT = 1e6
 
 const account = new Account()
+
+export const getTop5 = async () => {
+  const { balances } = await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
+  const leaders = take(5, sortWith([descend(prop(0))], map(([k, v]) => [v, k], toPairs(balances))))
+  // for each leader get account.
+  return Promise.all(map(
+    ([rewards, address]) => account.get(address).then(assoc('rewards', Number(rewards / 1e12).toFixed(4))),
+    leaders
+  ))
+}
 
 export const cancelOrder = (id) => {
   const stampContract = warp.contract(STAMP_CONTRACT)
