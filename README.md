@@ -1,9 +1,11 @@
-<h1 align="center">HypAR Template</h1>
-<p>Setup Permaweb Apps ⚡️ HypAR Apps!</p>
+<h1 align="center">stamps.arweave.dev</h1>
+<p>STAMPS is the home page of the STAMP Protocol</p>
+
+<p>You can find our more information about the STAMP Protocol here https://stamps.live</p>
 
 ## Contents
 
-* [Welcome](#welcome)
+* [Welcome to stamps.arweave.dev](#welcome)
 * [Usage](#usage)
 * [Stack](#stack)
 * [Contributions](#contributions)
@@ -12,31 +14,26 @@
 
 ## Welcome
 
-The Permaweb is changing the internet and the way applications are built, this toolkit gives web developers an on ramp to delivering permaweb applications.
+stamps.arweave.dev is a dashboard showing the current stats of the STAMP Protocol, and it gives users a top 25 leaderboard of the most highest STAMP Rewards creators, as well as the most recent stamp reward winners. A reward cycle is minted every 24 hours. The rewards are distributed based on the number of STAMPs an Atomic Asset received.
 
-## Usage
 
-``` sh
-npx degit twilson63/hypar myapp
-```
-
-Development Mode
+## Developer Usage
 
 ``` sh
-npm install
-npm run dev
+yarn
+yarn dev
 ```
 
 Build
 
 ``` sh
-npm run build
+yarn build
 ```
 
 Deploy to permaweb
 
 ``` sh
-npm run deploy [wallet.json]
+yarn deploy [wallet.json]
 ```
 
 ---
@@ -63,19 +60,14 @@ Libraries
 
 ## Contributing 
 
-Template Golas
-
-* Frictionless experience
-* Minimal
-* Builds should be small
-* Few opinions as possible
-
 Contributions are welcome, lets build the easiest environment to build for the permaweb!
 
 * Pull requests are welcome!
 
-Don't like the Stack, fork and add your favorite stack, but lets make these templates easy to use for the permaweb:
+## Resources
 
-* dev mode
-* build mode
-* deploy mode
+* Svelte - https://svelte.dev
+* Vite - https://vitejs.dev/
+* Routing - https://github.com/AlexxNB/tinro
+* Design - https://daisyui.com/ | https://tailwindcss.com/
+
