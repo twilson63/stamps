@@ -1,7 +1,8 @@
 import Account from 'arweave-account';
-import { assoc, map, path, prop, compose, concat, filter, propEq, pluck, sortWith, descend, toPairs, take } from 'ramda';
+import { assoc, map, path, prop, compose, concat, filter, propEq, pluck, sortWith, descend, toPairs, take, mergeLeft } from 'ramda';
 import { barToAtomic, stampToAtomic, atomicToStamp, winstonToAr, atomicToBar } from './utils.js'
 import { getDailyRewards } from './rewards.js'
+import { getProfile as getPermapageProfile } from './profile.js'
 
 const arweave = window.Arweave.init({
   host: 'arweave.net',
@@ -27,15 +28,19 @@ const STAMP_UNIT = 1e12
 const BAR_UNIT = 1e6
 
 const account = new Account()
+const handlePermaProfile = a => a.profile.handleName === "" ? getPermapageProfile(arweave, [a.addr]).then(mergeLeft(a)) : a
 
 export const getTop25 = async () => {
   const { balances } = await fetch(`${CACHE}/${STAMP_CONTRACT}`).then(res => res.json())
   const leaders = take(25, sortWith([descend(prop(0))], map(([k, v]) => [v, k], toPairs(balances))))
   // for each leader get account.
   return Promise.all(map(
-    ([rewards, address]) => account.get(address).then(assoc('rewards', Number(rewards / 1e12).toFixed(4))),
+    ([rewards, address]) => account.get(address)
+      .then(handlePermaProfile)
+      .then(assoc('rewards', Number(rewards / 1e12).toFixed(4))),
     leaders
   ))
+
 }
 
 export const cancelOrder = (id) => {
@@ -180,6 +185,7 @@ export async function getStampCount() {
 
 export async function getAccount(addr) {
   return account.get(addr)
+    .then(handlePermaProfile)
   // if no account fallback to permapage
 
 }
