@@ -150,9 +150,11 @@
               </div>
               <div class="flex flex-col items-center space-y-4 mb-8">
                 <h3 class="text-2xl font-bold">
-                  {$profile.profile.handleName !== ""
-                    ? $profile.profile.handleName
-                    : $profile.handle}
+                  <a href="/player/{$profile.addr}" class="link">
+                    {$profile.profile.handleName !== ""
+                      ? $profile.profile.handleName
+                      : $profile.handle}
+                  </a>
                 </h3>
                 <img
                   class="mask mask-circle h-[84px] w-[84px]"

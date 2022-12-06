@@ -7,6 +7,7 @@
     getBARBalance,
     getArBalance,
   } from "../lib/app.js";
+  import Stamps from "../widgets/stamps/Widget.svelte";
   export let addr = "h7wP8NjoGkJTdLXC6kwS6fLTNgfeYbZr9YoED5NFQX0";
 
   let profile = null;
@@ -74,5 +75,7 @@
         </div>
       </div>
     {/if}
+    <h3 class="text-2xl">Stamped Assets</h3>
+    <Stamps address={addr} />
   </section>
 </main>
