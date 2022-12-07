@@ -74,8 +74,12 @@
           </div>
         </div>
       </div>
+      <h3 class="text-2xl">
+        Assets Stamped by {profile.profile.handleName !== ""
+          ? profile.profile.handleName
+          : profile.handle}
+      </h3>
+      <Stamps address={addr} />
     {/if}
-    <h3 class="text-2xl">Stamped Assets</h3>
-    <Stamps address={addr} />
   </section>
 </main>
