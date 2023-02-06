@@ -12,7 +12,7 @@ export default defineConfig({
   base: '',
   plugins: [svelte()],
   define: {
-    __STAMP_CONTRACT__: '"FMRHYgSijiUNBrFy-XqyNNXenHsCV0ThR4lGAPO4chA"',
+    __STAMP_CONTRACT__: '"QY54ApX4agQPjsi3214GanqpCO7RvWdBqLTAvkGEo8g"',
     __BAR_CONTRACT__: '"VFr3Bk-uM-motpNNkkFg4lNW1BMmSfzqsVO551Ho4hA"',
     __VOUCH_DAO__: '"_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk"',
     __TRADE_SOURCE_ID__: '"x0ojRwrcHBmZP20Y4SY0mgusMRx-IYTjg5W8c3UFoNs"',

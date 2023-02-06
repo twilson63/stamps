@@ -114,34 +114,64 @@
     <main>
       <section class="hero min-h-screen bg-base-100 items-start">
         <div class="hero-content flex-col">
-          <h1 class="text-4xl font-bold text-[#231F1F] dark:invert">STAMPS</h1>
-          <div class="stats">
-            {#await getAssetCount() then count}
-              <div class="stat place-items-center">
-                <div class="stat-title">Tradeable Atomic Assets</div>
-                <div class="stat-value text-[#231F1F] dark:invert">{count}</div>
-              </div>
-            {/await}
-            {#await getStampCount()}
-              <div class="stat place-items-center">
-                <div class="stat-title">Total Stamps Created</div>
-                <div class="stat-value text-[#231F1F] dark:invert">
-                  <button class="btn btn-ghost loading">&nbsp;&nbsp;</button>
+          <div class="flex items-center">
+            <h1
+              class="mr-16 text-4xl font-bold text-[#231F1F] dark:invert text-gray-300"
+            >
+              STAMPS
+            </h1>
+            <div class="stats">
+              {#await getAssetCount() then count}
+                <div class="stat place-items-center">
+                  <div class="stat-title">Atomic Tokens</div>
+                  <div class="stat-value text-[#231F1F]">
+                    {count}
+                  </div>
                 </div>
-              </div>
-            {:then count}
-              <div class="stat place-items-center">
-                <div class="stat-title">Total Stamps Created</div>
-                <div class="stat-value text-[#231F1F] dark:invert">{count}</div>
-              </div>
-            {/await}
+              {/await}
+              {#await getStampCount()}
+                <div class="stat place-items-center">
+                  <div class="stat-title">Stamps</div>
+                  <div class="stat-value text-[#231F1F]">
+                    <button class="btn btn-ghost loading">&nbsp;&nbsp;</button>
+                  </div>
+                </div>
+              {:then count}
+                <div class="stat place-items-center">
+                  <div class="stat-title">Stamps</div>
+                  <div class="stat-value text-[#231F1F]">
+                    {count}
+                  </div>
+                </div>
+              {/await}
 
-            {#await getVouchUsers() then count}
-              <div class="stat place-items-center">
-                <div class="stat-title">Total Vouched Users</div>
-                <div class="stat-value text-[#231F1F] dark:invert">{count}</div>
+              {#await getVouchUsers() then count}
+                <div class="stat place-items-center">
+                  <div class="stat-title">Vouched Users</div>
+                  <div class="stat-value text-[#231F1F] dark:invert">
+                    {count}
+                  </div>
+                </div>
+              {/await}
+            </div>
+            {#if $profile}
+              <div class="h-[100px] grid place-items-center">
+                <button
+                  class="btn rounded-none  btn-outline"
+                  on:click={async () => {
+                    await window.arweaveWallet.disconnect();
+                    $profile = null;
+                  }}>Disconnect</button
+                >
               </div>
-            {/await}
+            {:else}
+              <div class="h-[100px] grid place-items-center">
+                <button
+                  class="btn btn-primary btn-outline rounded-none"
+                  on:click={() => (showConnect = true)}>Connect Wallet</button
+                >
+              </div>
+            {/if}
           </div>
           {#if $profile}
             <div class="border-2 border-gray-400 rounded-xl p-8 relative">
@@ -220,13 +250,6 @@
                 class="btn rounded-none"
                 on:click={() => (showSell = true)}>Sell</button
               >
-              <button
-                class="btn rounded-none  btn-outline"
-                on:click={async () => {
-                  await window.arweaveWallet.disconnect();
-                  $profile = null;
-                }}>Disconnect</button
-              >
 
               <!--
             <button class="btn" on:click={() => getCurrentPrice()}
@@ -242,131 +265,111 @@
             {#each openOrders as order}
               <Order {order} on:cancel-order={handleCancelOrder} />
             {/each}
-
-            <!-- Get Stamps -->
-          {:else}
-            <div class="h-[100px] grid place-items-center">
-              <button
-                class="btn btn-primary btn-outline rounded-none"
-                on:click={() => (showConnect = true)}>Connect Wallet</button
-              >
-            </div>
           {/if}
           {#if !$profile}
-            <div class="flex flex-col">
-              <h3 class="text-2xl mb-8">
-                <button
-                  class={!recentWinners ? "text-blue-400" : "link"}
-                  on:click={() => (recentWinners = false)}
-                  disabled={!recentWinners}
-                >
-                  Stamp Coin Leaders
-                </button>
-                |
-                <button
-                  class={recentWinners ? "text-blue-400" : "link"}
-                  on:click={() => (recentWinners = true)}
-                  disabled={recentWinners}
-                >
-                  Recent Stamp Coin Winners
-                </button>
-              </h3>
-              {#if recentWinners}
+            <div
+              class="flex flex-col md:flex-row justify-center items-start space-x-16"
+            >
+              <div>
+                <h3 class="text-xl text-center mb-8">
+                  STAMP Token Leaderboard
+                </h3>
+                {#await getTop25() then accounts}
+                  {#each accounts as account}
+                    <div class="w-[500px] md:w-half">
+                      <div class="flex space-x-4 items-center">
+                        <div class="stats">
+                          <div class="stat place-items-center">
+                            <div class="stat-title text-xs">$STAMP Tokens</div>
+                            <div class="stat-value text-sm">
+                              {Number(account.rewards).toFixed(0)}
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          class="flex items-center justify-center w-[80px] center"
+                        >
+                          <img
+                            src={account.profile.handleName
+                              ? account.profile.avatarURL
+                              : "avatar.svg"}
+                            class="mask mask-circle h-[48px] w-[48px]"
+                            alt={account.profile.handle}
+                          />
+                        </div>
+
+                        <div class="">
+                          <div class="">
+                            {account.profile.handleName || account.handle}
+                          </div>
+                        </div>
+                        <div class="flex-1 flex justify-end items-center">
+                          <a
+                            href="/player/{account.addr}"
+                            class="btn border-none btn-outline rounded-none"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="1.5"
+                              stroke="currentColor"
+                              class="w-6 h-6"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                              />
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  {/each}
+                {/await}
+              </div>
+              <div>
+                <h3 class="text-xl text-center mb-8">Recent Winners</h3>
                 {#await getLatestWinners() then assets}
                   {#each assets as asset}
                     {#await getAccount(asset.creator) then acct}
-                      <div class="card w-[400px] md:w-[800px] shadow-xl">
+                      <div class="w-[400px] md:w-[500px] mb-4">
                         <div class="flex space-x-4 items-center">
                           <img
-                            src={acct.profile.avatarURL}
-                            class="m-4 mask mask-circle h-[128px] w-[128px]"
+                            src={acct.profile.handleName
+                              ? acct.profile.avatarURL
+                              : "avatar.svg"}
+                            class="m-4 mask mask-circle h-[48px] w-[48px]"
                             alt={acct.profile.handle}
                           />
 
-                          <div class="card-body">
-                            <div class="card-title">{asset.title}</div>
-                            <div>{asset.description}</div>
-                            <div class="flex space-x-4">
-                              <div class="flex flex-col">
-                                <div class="font-bold">Rewards</div>
-                                <div>
-                                  {asset.coins}
-                                  <span class="font-bold">$STAMP</span>
-                                </div>
-                              </div>
-                              <div class="flex-1 flex flex-col">
-                                <div class="font-bold">Creator</div>
-                                <div>
-                                  {acct.profile.handleName}
-                                  <a
-                                    href="https://v2.viewblock.io/arweave/address/{asset.creator}"
-                                  >
-                                    {`${take(5, asset.creator)}...${takeLast(
-                                      5,
-                                      asset.creator
-                                    )}`}
-                                  </a>
-                                </div>
-                              </div>
-                              <div class="flex flex-col">
-                                <div class="font-bold">View</div>
-                                <div>
-                                  <a
-                                    target="_blank"
-                                    href="https://arweave.net/{asset.id}"
-                                    ><img
-                                      src="assets/view.svg"
-                                      class="h-[24px] w-[24px] dark:invert"
-                                      alt="view asset"
-                                    /></a
-                                  >
-                                </div>
-                              </div>
+                          <div class="w-full">
+                            <div class="text-xl font-medium text-gray-700">
+                              {asset.title}
                             </div>
+                            <div class="text-sm">{asset.description}</div>
+                          </div>
+                          <div>
+                            {asset.coins}
+                          </div>
+                          <div>
+                            <a
+                              target="_blank"
+                              href="https://arweave.net/{asset.id}"
+                              ><img
+                                src="assets/view.svg"
+                                class="h-[48px] w-[48px] dark:invert"
+                                alt="view asset"
+                              /></a
+                            >
                           </div>
                         </div>
                       </div>
                     {/await}
                   {/each}
                 {/await}
-              {:else}
-                {#await getTop25() then accounts}
-                  {#each accounts as account}
-                    <div class="card w-[400px] md:w-[800px] shadow-xl">
-                      <div class="flex space-x-4 items-center">
-                        <img
-                          src={account.profile.avatarURL}
-                          class="m-4 mask mask-circle h-[128px] w-[128px]"
-                          alt={account.profile.handle}
-                        />
-
-                        <div class="card-body">
-                          <div class="card-title">
-                            {account.profile.handleName}
-                          </div>
-                          <div>{account.profile.name}</div>
-                          <div class="flex space-x-4">
-                            <div class="flex flex-col">
-                              <div class="font-bold">Rewards</div>
-                              <div>
-                                {account.rewards}
-                                <span class="font-bold">$STAMP</span>
-                              </div>
-                            </div>
-                            <div class="flex-1 flex justify-end items-center">
-                              <a
-                                href="/player/{account.addr}"
-                                class="btn btn-outline rounded-none"
-                                >View Details</a
-                              >
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  {/each}
-                {/await}
-              {/if}
+              </div>
             </div>
           {/if}
         </div>
