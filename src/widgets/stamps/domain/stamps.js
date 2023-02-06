@@ -3,7 +3,7 @@ import { assoc, compose, filter, find, map, propOr, propEq, pluck } from 'ramda'
 
 const { of, ask, lift } = ReaderT(Async)
 
-const STAMP_CONTRACT = 'FMRHYgSijiUNBrFy-XqyNNXenHsCV0ThR4lGAPO4chA'
+const STAMP_CONTRACT = '61vg8n54MGSC9ZHfSVAtQp4WjNb20TaThu6bkQ86pPI'
 
 export const stampsByAddress = (addr) =>
   of(addr)
