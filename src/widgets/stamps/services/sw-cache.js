@@ -1,6 +1,5 @@
 import fpjson from "fpjson-lang"
 
-const CACHE_URL = 'https://cache.permapages.app'
 const DRE = 'https://dre-1.warp.cc'
 
 export const query = (contract, q) =>
