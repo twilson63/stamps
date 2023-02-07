@@ -269,7 +269,7 @@
           {/if}
           {#if !$profile}
             <div
-              class="flex flex-col md:flex-row justify-center items-start space-x-16"
+              class="flex flex-col lg:flex-row justify-center items-start space-x-16 max-width-[1000px]"
             >
               <div>
                 <h3 class="text-xl text-center mb-8">
@@ -278,7 +278,7 @@
                 {#await getTop25() then accounts}
                   {#each accounts as account, i}
                     <div
-                      class="p-4 w-[500px] md:w-half {i % 2 !== 0
+                      class="p-4 w-45% md:w-half {i % 2 !== 0
                         ? 'bg-gray-100'
                         : ''}"
                     >
@@ -333,7 +333,7 @@
                   {#each assets as asset, i}
                     {#await getAccount(asset.creator) then acct}
                       <div
-                        class="p-4 w-[400px] md:w-[500px] mb-4 {i % 2 !== 0
+                        class="p-4 w-[400px] md:w-45% mb-4 {i % 2 !== 0
                           ? 'bg-gray-100'
                           : ''}"
                       >
