@@ -273,17 +273,13 @@
                   STAMP Token Leaderboard
                 </h3>
                 {#await getTop25() then accounts}
-                  {#each accounts as account}
-                    <div class="w-[500px] md:w-half">
+                  {#each accounts as account, i}
+                    <div
+                      class="p-4 w-[500px] md:w-half {i % 2 !== 0
+                        ? 'bg-gray-100'
+                        : ''}"
+                    >
                       <div class="flex space-x-4 items-center">
-                        <div class="stats">
-                          <div class="stat place-items-center">
-                            <div class="stat-title text-xs">$STAMP Tokens</div>
-                            <div class="stat-value text-sm">
-                              {Number(account.rewards).toFixed(0)}
-                            </div>
-                          </div>
-                        </div>
                         <div
                           class="flex items-center justify-center w-[80px] center"
                         >
@@ -296,30 +292,31 @@
                           />
                         </div>
 
+                        <div class="stats">
+                          <div
+                            class="stat place-items-center {i % 2 !== 0
+                              ? 'bg-gray-100'
+                              : ''}"
+                          >
+                            <div class="stat-title text-xs">$STAMP Tokens</div>
+                            <div class="stat-value text-sm">
+                              {Number(account.rewards).toFixed(0)}
+                            </div>
+                          </div>
+                        </div>
+
                         <div class="">
                           <div class="">
                             {account.profile.handleName || account.handle}
                           </div>
                         </div>
                         <div class="flex-1 flex justify-end items-center">
-                          <a
-                            href="/player/{account.addr}"
-                            class="btn border-none btn-outline rounded-none"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke-width="1.5"
-                              stroke="currentColor"
-                              class="w-6 h-6"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                              />
-                            </svg>
+                          <a href="/player/{account.addr}" class="">
+                            <img
+                              src="assets/view.svg"
+                              class="h-[48px] w-[48px] hover:invert"
+                              alt="view player"
+                            />
                           </a>
                         </div>
                       </div>
@@ -330,37 +327,47 @@
               <div>
                 <h3 class="text-xl text-center mb-8">Recent Winners</h3>
                 {#await getLatestWinners() then assets}
-                  {#each assets as asset}
+                  {#each assets as asset, i}
                     {#await getAccount(asset.creator) then acct}
-                      <div class="w-[400px] md:w-[500px] mb-4">
-                        <div class="flex space-x-4 items-center">
-                          <img
-                            src={acct.profile.handleName
-                              ? acct.profile.avatarURL
-                              : "avatar.svg"}
-                            class="m-4 mask mask-circle h-[48px] w-[48px]"
-                            alt={acct.profile.handle}
-                          />
-
-                          <div class="w-full">
+                      <div
+                        class="p-4 w-[400px] md:w-[500px] mb-4 {i % 2 !== 0
+                          ? 'bg-gray-100'
+                          : ''}"
+                      >
+                        <div class="flex space-x-4 items-start">
+                          <div class="w-[500px]">
                             <div class="text-xl font-medium text-gray-700">
-                              {asset.title}
+                              <div class="flex">
+                                <div>{asset.title}</div>
+                                <a
+                                  class="ml-2 flex-1"
+                                  href="https://arweave.net/{asset.id}"
+                                  ><img
+                                    src="assets/view.svg"
+                                    class="h-[24px] w-[24px] hover:invert"
+                                    alt="view asset"
+                                  /></a
+                                >
+                              </div>
                             </div>
                             <div class="text-sm">{asset.description}</div>
-                          </div>
-                          <div>
-                            {asset.coins}
-                          </div>
-                          <div>
-                            <a
-                              target="_blank"
-                              href="https://arweave.net/{asset.id}"
-                              ><img
-                                src="assets/view.svg"
-                                class="h-[48px] w-[48px]"
-                                alt="view asset"
-                              /></a
+                            <div
+                              class="pt-2 flex space-x-16 justify-start items-center"
                             >
+                              <div class="flex space-x-2">
+                                <img
+                                  src={acct.profile.handleName
+                                    ? acct.profile.avatarURL
+                                    : "avatar.svg"}
+                                  class="mask mask-circle h-[24px] w-[24px]"
+                                  alt={acct.profile.handle}
+                                />
+                                <p>{acct.profile.handleName || "Unknown"}</p>
+                              </div>
+                              <div class="flex-1 text-right">
+                                {asset.coins}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
