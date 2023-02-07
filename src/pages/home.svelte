@@ -115,9 +115,7 @@
       <section class="hero min-h-screen bg-base-100 items-start">
         <div class="hero-content flex-col">
           <div class="flex items-center">
-            <h1
-              class="mr-16 text-4xl font-bold text-[#231F1F] dark:invert text-gray-300"
-            >
+            <h1 class="mr-16 text-4xl font-bold text-[#231F1F] text-gray-300">
               STAMPS
             </h1>
             <div class="stats">
@@ -148,7 +146,7 @@
               {#await getVouchUsers() then count}
                 <div class="stat place-items-center">
                   <div class="stat-title">Vouched Users</div>
-                  <div class="stat-value text-[#231F1F] dark:invert">
+                  <div class="stat-value text-[#231F1F]">
                     {count}
                   </div>
                 </div>
@@ -197,7 +195,7 @@
               </div>
               <div class="stats shadow">
                 <div class="stat place-items-center">
-                  <div class="stat-title">Atomic Assets</div>
+                  <div class="stat-title">Atomic Tokens</div>
                   <div class="stat-value">
                     {#if $balances.assets > -1}
                       {$balances.assets}
@@ -359,7 +357,7 @@
                               href="https://arweave.net/{asset.id}"
                               ><img
                                 src="assets/view.svg"
-                                class="h-[48px] w-[48px] dark:invert"
+                                class="h-[48px] w-[48px]"
                                 alt="view asset"
                               /></a
                             >
