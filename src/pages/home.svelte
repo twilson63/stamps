@@ -46,6 +46,9 @@
     }
   }
 
+  const DEFAULT_AVATAR =
+    "https://arweave.net/yCZMJWHprkdOHTtep2Y_uXzc_c9bmSpPvBzb8KyObWA";
+
   async function handleSell(e) {
     try {
       if (Number($balances.stampcoins) < Number(e.detail.stampCoinQty)) {
@@ -286,7 +289,7 @@
                           <img
                             src={account.profile.handleName
                               ? account.profile.avatarURL
-                              : "avatar.svg"}
+                              : DEFAULT_AVATAR}
                             class="mask mask-circle h-[48px] w-[48px]"
                             alt={account.profile.handle}
                           />
@@ -358,7 +361,7 @@
                                 <img
                                   src={acct.profile.handleName
                                     ? acct.profile.avatarURL
-                                    : "avatar.svg"}
+                                    : DEFAULT_AVATAR}
                                   class="mask mask-circle h-[24px] w-[24px]"
                                   alt={acct.profile.handle}
                                 />

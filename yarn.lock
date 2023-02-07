@@ -407,8 +407,8 @@
     fastq "^1.6.0"
 
 "@permaweb/stampjs@https://js_stamps.g8way.io":
-  version "0.0.2"
-  resolved "https://js_stamps.g8way.io#ef5ed4c01e0367bf3683da01b2f4294ed43a2de7"
+  version "0.0.3"
+  resolved "https://js_stamps.g8way.io#c16fdeca85df21a300d9872693ac47cda0120639"
 
 "@randlabs/communication-bridge@^1.0.0":
   version "1.0.0"
