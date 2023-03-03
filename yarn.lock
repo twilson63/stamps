@@ -406,9 +406,13 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@permaweb/stampjs@https://js_stamps.g8way.io":
-  version "0.0.3"
-  resolved "https://js_stamps.g8way.io#c16fdeca85df21a300d9872693ac47cda0120639"
+"@permaweb/stampjs@^0.0.13":
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/@permaweb/stampjs/-/stampjs-0.0.13.tgz#ba6d5ab2eb43c02cbf533dd81f117751095e9de1"
+  integrity sha512-Kmu/lQFvrbQKMi/VewhVOWUn+CxJgoM55DdhSfFIUmZfThWosrf60+nT50YRU/eN8CyfJ4iBr3210nv4NUY3IA==
+  dependencies:
+    fpjson-lang "^0.1.3"
+    ramda "^0.28.0"
 
 "@randlabs/communication-bridge@^1.0.0":
   version "1.0.0"
