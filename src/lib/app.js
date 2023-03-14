@@ -17,7 +17,7 @@ const warp = WarpFactory.forMainnet()
 
 const GATEWAY = 'https://arweave.net'
 const REDSTONE_GATEWAY = 'https://gateway.redstone.finance'
-const CACHE = 'https://cache.permapages.app'
+const CACHE = 'https://cache-2.permaweb.tools'
 const DRE = 'https://dre-1.warp.cc'
 
 const TRADE_SOURCE_ID = __TRADE_SOURCE_ID__

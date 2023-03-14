@@ -5,7 +5,7 @@ import { fetch } from 'undici'
 
 globalThis.fetch = fetch
 
-const CACHE = 'https://cache.permapages.app'
+const CACHE = 'https://cache-2.permaweb.tools'
 const STAMP_CONTRACT = 'aSMILD7cEJr93i7TAVzzMjtci_sGkXcWnqpDkG6UGcA'
 
 
