@@ -105,6 +105,7 @@
     $balances.stampcoins = await myStampCoins();
     $balances.bar = await getBARBalance($profile.addr);
     $balances.ar = await getArBalance($profile.addr);
+    console.log($balances);
   }
 
   async function handleCancelOrder() {

@@ -16,8 +16,9 @@ LoggerFactory.INST.logLevel('fatal')
 const warp = WarpFactory.forMainnet()
 
 const GATEWAY = 'https://arweave.net'
-const REDSTONE_GATEWAY = 'https://gateway.redstone.finance'
+const REDSTONE_GATEWAY = 'https://gateway.warp.cc'
 const CACHE = 'https://cache-2.permaweb.tools'
+//const CACHE = 'https://cache.permapages.app'
 const DRE = 'https://dre-1.warp.cc'
 
 const TRADE_SOURCE_ID = __TRADE_SOURCE_ID__
@@ -27,12 +28,47 @@ const BAR = __BAR_CONTRACT__
 const VOUCH_DAO = __VOUCH_DAO__
 const STAMP_UNIT = 1e12
 const BAR_UNIT = 1e6
+const options = { allowBigInt: true, internalWrites: true, unsafeClient: 'allow' }
 
 const account = new Account()
 const handlePermaProfile = a => a.profile.handleName === "" ? getPermapageProfile(arweave, [a.addr]).then(mergeLeft(a)) : a
 
+let stampState, barState, vouchState
+
+// async function init() {
+//   const stampState = await warp.contract(STAMP_CONTRACT).syncState(CACHE + '/contract', { validity: true })
+//     .then(c => c.setEvaluationOptions(options).readState())
+//     .then(path(['cachedValue', 'state']))
+
+//   const barState = await warp.contract(BAR).syncState(CACHE + '/contract', { validity: true })
+//     .then(c => c.setEvaluationOptions(options).readState())
+
+//   const vouchState = await warp.contract(VOUCH_DAO).syncState(CACHE + '/contract', { validity: true })
+//     .then(c => c.setEvaluationOptions(options).readState())
+
+//   return { stampState, barState, vouchState }
+// }
+
+// console.time('load')
+// init().then(result => {
+//   stampState = result.stampState
+//   barState = result.barState
+//   vouchState = result.vouchState
+//   console.timeEnd('load')
+// })
+
+function getState() {
+  return stampState
+  // return warp.contract(STAMP_CONTRACT).setEvaluationOptions({
+  //   allowBigInt: true,
+  //   internalWrites: true,
+  //   unsafeClient: 'allow'
+  // }).readState().then(path(['cachedValue', 'state']))
+}
+
 export const getTop25 = async () => {
-  const balances = await fetch(`${DRE}/contract?id=${STAMP_CONTRACT}&query=$.balances`).then(res => res.json()).then(r => r.result[0])
+  //const balances = await fetch(`${CACHE}/contract?id=${STAMP_CONTRACT}`).then(res => res.json()).then(r => r.state.balances)
+  const balances = await getState().then(prop('balances'))
   const leaders = take(25, sortWith([descend(prop(0))], map(([k, v]) => [v, k], toPairs(balances))))
   // for each leader get account.
   return Promise.all(map(
@@ -45,12 +81,12 @@ export const getTop25 = async () => {
 }
 
 export const cancelOrder = async (id) => {
-  await warp.contract(STAMP_CONTRACT).syncState(DRE + '/contract', { validity: true })
   const stampContract = warp.contract(STAMP_CONTRACT)
     .connect('use_wallet')
     .setEvaluationOptions({
       internalWrites: true,
-      allowBigInt: true
+      allowBigInt: true,
+      unsafeClient: 'allow'
     })
 
   return stampContract.writeInteraction({
@@ -69,15 +105,19 @@ export const getOpenOrders = (addr) => getStampState()
 //.then(x => (console.log('orders: ', x), x))
 
 
-export const getVouchUsers = () => fetch(`${DRE}/contract?id=${VOUCH_DAO}&query=$.vouched`)
-  .then(res => res.json()).then(r => r.result[0])
+// export const getVouchUsers = () => fetch(`${DRE}/contract?id=${VOUCH_DAO}&query=$.vouched`)
+//   .then(res => res.json()).then(r => r.result[0])
+//   .then(vouched => Object.keys(vouched).length)
+//   .catch(e => 'N/A')
+
+export const getVouchUsers = () => Promise.resolve(vouchState)
+  .then(path(['vouched']))
   .then(vouched => Object.keys(vouched).length)
   .catch(e => 'N/A')
 
-export const getLatestWinners = () => getDailyRewards(DRE, STAMP_CONTRACT)
+export const getLatestWinners = async () => getDailyRewards(await getState())
 
-export const getRewardHistory = (asset) => fetch(`${DRE}/contract=?id=${STAMP_CONTRACT}&query=$`)
-  .then(res => res.json()).then(r => r.result[0])
+export const getRewardHistory = (asset) => getState()
   .then(
     compose(
       map(n => ({ coins: atomicToStamp(n.coins), date: new Date(Number(n.timestamp)).toISOString() })),
@@ -86,37 +126,16 @@ export const getRewardHistory = (asset) => fetch(`${DRE}/contract=?id=${STAMP_CO
     )
   )
 
-let stampState = null
-let stampCheckTS = null
 async function getStampState() {
-  // warp.contract(STAMP_CONTRACT).setEvaluationOptions({
-  //   internalWrites: true,
-  //   allowBigInt: true,
-  //   allowUnsafeClient: true
-  // }).readState() // keep indexDb cache up to date...
-  //   .then(path(['cachedValue', 'state']))
-  //   .then(state => stampState = state)
-
-  // only ping cache every 5 minutes
-  if (!stampState) {
-    stampCheckTS = Date.now()
-    return fetch(`${DRE}/contract?id=${STAMP_CONTRACT}&query=$`).then(res => res.json()).then(r => r.result[0])
-  } else if (Date.now() < (stampCheckTS + 5 * 60 * 1000)) {
-    return stampState
-  } else {
-    stampCheckTS = Date.now()
-    return fetch(`${DRE}/contract?id=${STAMP_CONTRACT}&query=$`).then(res => res.json()).then(r => r.result[0])
-  }
-
-
+  return getState()
 }
 
 export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
   try {
     const qty = Number(barToAtomic(stampCoinQty * stampPrice))
 
-    await warp.contract(BAR).syncState(DRE + '/contract', { validity: true })
-    await warp.contract(STAMP_CONTRACT).syncState(DRE + '/contract', { validity: true })
+    // await warp.contract(BAR).syncState(DRE + '/contract', { validity: true })
+    // await warp.contract(STAMP_CONTRACT).syncState(DRE + '/contract', { validity: true })
     // TODO: use warp for this transaction
     const allowTx = await createTransaction(arweave, BAR, {
       function: 'allow',
@@ -181,6 +200,7 @@ export async function getAssetCount() {
   ])
     .then(([a, b]) => a + b)
 
+
 }
 
 export async function getStampCount() {
@@ -223,32 +243,16 @@ export const getArBalance = async (addr) => {
 }
 
 export const getBARBalance = async (addr) => {
-  //return fetch(`${DRE}/contract?id=${BAR}&query=$`).then(res => res.json()).then(r => r.result[0])
-  return fetch(`${CACHE}/${BAR}`).then(res => res.ok ? res.json() : Promise.reject(new Error('could not get bar balance')))
+  return Promise.resolve(barState)
     .then(state => state.balances[addr] ? state.balances[addr] : 0)
     .then(atomicToBar)
     .then(x => Number(x).toFixed(4))
-  /*
-return warp.contract(BAR).setEvaluationOptions({
-  internalWrites: true,
-  allowUnsafeClient: true,
-  allowBigInt: true
-}).readState()
-  .then(path(['cachedValue', 'state']))
-  .catch(e => fetch(`${CACHE}/${BAR}`).then(res => res.json()))
-  .then(state => state.balances[addr] ? state.balances[addr] : 0)
-  .then(atomicToBar)
-  .then(x => Number(x).toFixed(4))
-*/
+
 }
 
 
 export const getCurrentPrice = async () => {
-  return fetch(`${CACHE}/${STAMP_CONTRACT}`)
-    .then(res => res.json())
-    // keep indexDb cache up to date...
-    //.then(path(['cachedValue', 'state']))
-
+  return Promise.resolve(stampState)
     .then(s => s.pairs.find(({ pair, orders }) => pair[0] === STAMP_CONTRACT && pair[1] === BAR))
 
     .then(({ pair, orders }) => orders.reduce((a, v) => v.price < a ? v.price : a, Infinity))
@@ -256,7 +260,6 @@ export const getCurrentPrice = async () => {
     .then(price => Math.fround(Number(price) * 1e6).toFixed(6))
 
     .catch(e => {
-      console.log(e)
       return 0
     })
 
