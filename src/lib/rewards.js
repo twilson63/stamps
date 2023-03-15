@@ -3,7 +3,7 @@ import { atomicToStamp } from './utils.js'
 import { compose, path, pluck, find, propEq, prop, map, reduce, sort } from 'ramda'
 
 export async function getDailyRewards(DRE, STAMP_CONTRACT) {
-  const state = await fetch(`${DRE}/contract?id=${STAMP_CONTRACT}&query=$`).then(res => res.json()).then(r => r.result[0])
+  const state = await fetch(`${DRE}/contract?id=${STAMP_CONTRACT}`).then(res => res.json()).then(prop('state'))
   const recent = state.rewardLog[state.rewardLog.length - 1].timestamp
   const rewards = fpjson([
     ['compose',

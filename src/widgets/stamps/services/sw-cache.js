@@ -1,9 +1,9 @@
 import fpjson from "fpjson-lang"
 
-const DRE = 'https://dre-1.warp.cc'
+const CACHE = 'https://cache-2.permaweb.tools'
 
 export const query = (contract, q) =>
-  fetch(`${DRE}/contract?id=${contract}&query=$`).then(res => res.json())
-    .then(r => r.result[0])
+  fetch(`${CACHE}/contract?id=${contract}`).then(res => res.json())
+    .then(r => r.state)
     .then(s => fpjson([q, s]))
     .then(x => (console.log(x), x))

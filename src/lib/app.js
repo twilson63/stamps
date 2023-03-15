@@ -16,7 +16,7 @@ LoggerFactory.INST.logLevel('fatal')
 const warp = WarpFactory.forMainnet()
 
 const GATEWAY = 'https://arweave.net'
-const REDSTONE_GATEWAY = 'https://gateway.redstone.finance'
+const REDSTONE_GATEWAY = 'https://gateway.warp.cc'
 const CACHE = 'https://cache-2.permaweb.tools'
 const DRE = 'https://dre-1.warp.cc'
 
@@ -32,7 +32,7 @@ const account = new Account()
 const handlePermaProfile = a => a.profile.handleName === "" ? getPermapageProfile(arweave, [a.addr]).then(mergeLeft(a)) : a
 
 export const getTop25 = async () => {
-  const balances = await fetch(`${DRE}/contract?id=${STAMP_CONTRACT}&query=$.balances`).then(res => res.json()).then(r => r.result[0])
+  const balances = await fetch(`${CACHE}/contract?id=${STAMP_CONTRACT}`).then(res => res.json()).then(path(['state', 'balances']))
   const leaders = take(25, sortWith([descend(prop(0))], map(([k, v]) => [v, k], toPairs(balances))))
   // for each leader get account.
   return Promise.all(map(
@@ -45,7 +45,7 @@ export const getTop25 = async () => {
 }
 
 export const cancelOrder = async (id) => {
-  await warp.contract(STAMP_CONTRACT).syncState(DRE + '/contract', { validity: true })
+  await warp.contract(STAMP_CONTRACT).syncState(CACHE + '/contract', { validity: true })
   const stampContract = warp.contract(STAMP_CONTRACT)
     .connect('use_wallet')
     .setEvaluationOptions({
@@ -69,15 +69,15 @@ export const getOpenOrders = (addr) => getStampState()
 //.then(x => (console.log('orders: ', x), x))
 
 
-export const getVouchUsers = () => fetch(`${DRE}/contract?id=${VOUCH_DAO}&query=$.vouched`)
-  .then(res => res.json()).then(r => r.result[0])
+export const getVouchUsers = () => fetch(`${DRE}/contract?id=${VOUCH_DAO}`)
+  .then(res => res.json()).then(path(['state', 'vouched']))
   .then(vouched => Object.keys(vouched).length)
   .catch(e => 'N/A')
 
-export const getLatestWinners = () => getDailyRewards(DRE, STAMP_CONTRACT)
+export const getLatestWinners = () => getDailyRewards(CACHE, STAMP_CONTRACT)
 
-export const getRewardHistory = (asset) => fetch(`${DRE}/contract=?id=${STAMP_CONTRACT}&query=$`)
-  .then(res => res.json()).then(r => r.result[0])
+export const getRewardHistory = (asset) => fetch(`${CACHE}/contract=?id=${STAMP_CONTRACT}`)
+  .then(res => res.json()).then(prop('state'))
   .then(
     compose(
       map(n => ({ coins: atomicToStamp(n.coins), date: new Date(Number(n.timestamp)).toISOString() })),
@@ -100,12 +100,12 @@ async function getStampState() {
   // only ping cache every 5 minutes
   if (!stampState) {
     stampCheckTS = Date.now()
-    return fetch(`${DRE}/contract?id=${STAMP_CONTRACT}&query=$`).then(res => res.json()).then(r => r.result[0])
+    return fetch(`${CACHE}/contract?id=${STAMP_CONTRACT}`).then(res => res.json()).then(prop('state'))
   } else if (Date.now() < (stampCheckTS + 5 * 60 * 1000)) {
     return stampState
   } else {
     stampCheckTS = Date.now()
-    return fetch(`${DRE}/contract?id=${STAMP_CONTRACT}&query=$`).then(res => res.json()).then(r => r.result[0])
+    return fetch(`${CACHE}/contract?id=${STAMP_CONTRACT}`).then(res => res.json()).then(prop('state'))
   }
 
 
@@ -115,8 +115,8 @@ export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
   try {
     const qty = Number(barToAtomic(stampCoinQty * stampPrice))
 
-    await warp.contract(BAR).syncState(DRE + '/contract', { validity: true })
-    await warp.contract(STAMP_CONTRACT).syncState(DRE + '/contract', { validity: true })
+    await warp.contract(BAR).syncState(CACHE + '/contract', { validity: true })
+    await warp.contract(STAMP_CONTRACT).syncState(CACHE + '/contract', { validity: true })
     // TODO: use warp for this transaction
     const allowTx = await createTransaction(arweave, BAR, {
       function: 'allow',
@@ -137,7 +137,7 @@ export async function buyStampCoin(stampCoinQty, stampPrice, addr) {
     await arweave.transactions.sign(buyTx, 'use_wallet')
     await writeInteraction(buyTx)
 
-    return fetch(`${DRE}/contract?id=${STAMP_CONTRACT}&query=$`).then(res => res.json()).then(r => r.result[0])
+    return fetch(`${CACHE}/contract?id=${STAMP_CONTRACT}`).then(res => res.json()).then(prop('state'))
       .then(s => Number(atomicToStamp(s.balances[addr])).toFixed(2))
 
   } catch (e) {
@@ -161,7 +161,7 @@ export async function sellStampCoin(stampCoinQty, stampPrice, addr) {
 
     await writeInteraction(sellTx)
 
-    return fetch(`${DRE}/contract?id=${STAMP_CONTRACT}&query=$`).then(res => res.json()).then(r => r.result[0])
+    return fetch(`${CACHE}/contract?id=${STAMP_CONTRACT}`).then(res => res.json()).then(prop('state'))
       .then(s => Number(atomicToStamp(s.balances[addr])).toFixed(2))
   } catch (e) {
     console.log('error', e.message)
